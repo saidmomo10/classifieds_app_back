@@ -25,6 +25,8 @@ class SubscriptionController extends Controller
         $request->validate([
             'name' => 'required',
             'duration' => 'required',
+            'price' => 'required',
+            'description' => 'required'
         ]);
 
         // Créer un nouvel abonnement
@@ -33,17 +35,18 @@ class SubscriptionController extends Controller
             // 'start_date' => now(),
             'name' => $request->input('name'),
             'duration' => $request->input('duration'),
+            'price' => $request->input('price'),
+            'description' => $request->input('description'),
         ]);
         // $subscription->update(['start_date'=> now()]);
         $subscription->save();
 
-        return back()->with('message', 'Abonnement créé avec succès!');
+        return response()->json($subscription, 201);
     }
 
     public function list()
     {
-        $subscriptions = Subscription::all();
-        return view('subscriptionsViews.subscriptionsListView', compact('subscriptions'));
+        return Subscription::all();
     }
 
     public function show($id){
@@ -68,7 +71,7 @@ class SubscriptionController extends Controller
         
         // $subscription->save();
         // dd($subscription);
-        return view('subscriptionsViews.showSubscription', compact('subscription','user','key','files', 'chaine', 'availableChannels'));
+        return $key;
     }
 
     public function activate($id)
@@ -99,8 +102,8 @@ class SubscriptionController extends Controller
         $subscription->save();
         // $this->status($subscriptions);
         
-
-        return back()->with('success', 'Abonnement activé avec succès!');
+        return response()->json($subscription, 201);
+        // return back()->with('success', 'Abonnement activé avec succès!');
     }
 
     // public function status($id)
