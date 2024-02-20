@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('country')->nullable(false);
             $table->string('city')->nullable(false);
             $table->integer('price')->nullable();
-            $table->string('mainly_image')->nullable(false);
-            $table->string('secondary_image')->nullable(false);
-            $table->string('tertiary_image')->nullable(false);
+            $table->string('mainly_image')->nullable();
+            $table->string('secondary_image')->nullable();
+            $table->string('tertiary_image')->nullable();
             $table->boolean('visibility')->nullable();
             $table->enum('delivery_status', ['Oui', 'Non'])->nullable(false);
             $table->enum('state', ['Oui', 'Non'])->nullable(false);

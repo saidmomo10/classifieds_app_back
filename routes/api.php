@@ -24,11 +24,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('ad')->middleware('web')->group(function () {
-    Route::post('step-one', [AdController::class, 'stepOne']);
-    Route::post('step-two', [AdController::class, 'stepTwo']);
-    Route::post('step-three', [AdController::class, 'stepThree']);
-});
+// Route::prefix('ad')->middleware('web')->group(function () {
+//     Route::post('step1', [AdController::class, 'stepOne']);
+//     Route::post('step2', [AdController::class, 'stepTwo']);
+//     Route::post('step3', [AdController::class, 'stepThree']);
+// });
 
 Route::apiResource('roles', RoleController::class)->middleware('auth:sanctum');
 Route::apiResource('ads', AdController::class)->middleware('auth:sanctum');
