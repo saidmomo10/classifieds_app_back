@@ -40,8 +40,8 @@ Route::controller(SubscriptionController::class)->middleware('auth:sanctum')->gr
     Route::get('/add-subscriptions', 'addSubscriptions')->name('addSubscriptions');
     Route::post('/create-subscription', 'createSubscription')->name('createSubscription');
     Route::get('/subscriptions-list', 'list')->name('list');
-    Route::get('showSubscription/{id}', 'show')->name('showSubscription');
-    Route::put('/activateSubscription/{id}', 'activate')->name('activateSubscription');
+    Route::get('/showSubscription', 'show')->name('showSubscription');
+    Route::put('/activateSubscription/{id}', 'activate')->name('activateSubscription'); 
     Route::put('/statusSubscription/{id}', 'status')->name('SubscriptionStatus');
     // Route::put('/affect-file/{id}', 'affect')->name('affectFile');
 

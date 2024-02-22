@@ -17,21 +17,15 @@ return new class extends Migration
             $table->string('description')->nullable(false);
             $table->string('country')->nullable(false);
             $table->string('city')->nullable(false);
+            $table->integer('phone')->nullable();
             $table->integer('price')->nullable();
-            $table->string('mainly_image')->nullable();
-            $table->string('secondary_image')->nullable();
-            $table->string('tertiary_image')->nullable();
+            $table->string('images')->nullable();
             $table->boolean('visibility')->nullable();
+            $table->enum('price_type', ['Fixe', 'Débattable'])->nullable();
             $table->enum('delivery_status', ['Oui', 'Non'])->nullable(false);
-            $table->enum('state', ['Oui', 'Non'])->nullable(false);
-            $table->foreignId('user_id')->nullable()
-                ->constrained('users');
-                // ->onUpdate('cascade')
-                // ->onDelete('cascade');
-            $table->foreignId('subcategory_id')->nullable()
-                ->constrained('sub_categories');
-                // ->onUpdate('cascade')
-                // ->onDelete('cascade');
+            $table->enum('state', ['Neuf', 'Usé'])->nullable(false);
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
           
         });

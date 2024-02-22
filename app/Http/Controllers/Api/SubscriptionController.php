@@ -49,15 +49,15 @@ class SubscriptionController extends Controller
         return Subscription::all();
     }
 
-    public function show($id){
-        $subscription = Subscription::find($id);
+    public function show(){
+        // $subscription = Subscription::find($id);
         $user = Auth::user();
-        $files = File::all();
+        // $files = File::all();
 
-        $attachedChannels = $subscription->files()->pluck('files.id')->toArray();
-        $availableChannels = $files->whereNotIn('id', $attachedChannels);
+        // $attachedChannels = $subscription->files()->pluck('files.id')->toArray();
+        // $availableChannels = $files->whereNotIn('id', $attachedChannels);
     
-        $chaine = $subscription->files()->get();
+        // $chaine = $subscription->files()->get();
         // dd($chaine);
         $key = $user->subscriptions()->latest('activated_at')->first();
         // dd($key->pivot->status);

@@ -51,4 +51,8 @@ class User extends Authenticatable
         ->withPivot('status','activated_at','end_date')
         ->withTimestamps();
     }
+
+    public function ad(){
+        return $this->hasMany(Ad::class);
+    }
 }
