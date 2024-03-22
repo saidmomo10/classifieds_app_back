@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_subscription', function (Blueprint $table) {
+        Schema::create('user_subscriptions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('subscription_id');
-            $table->string('status')->defaultValue('Abonnement actif');
+            $table->string('status')->nullable();
             $table->dateTime('activated_at')->nullable();
             $table->dateTime('end_date')->nullable();
             $table->timestamps();

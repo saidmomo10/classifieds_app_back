@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Ad;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,5 +14,9 @@ class SubCategory extends Model
 
     public function category(){
         return $this->belongsTo(Category::class);
+    }
+
+    public function ads(){
+        return $this->hasMany(Ad::class);
     }
 }

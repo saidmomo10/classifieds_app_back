@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;    
+use Inertia\Inertia;
 class RoleController extends Controller
 {
     /**
@@ -29,14 +30,8 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        return Role::all();
-    }
-    
-    
-    public function create()
-    {
-        $permission = Permission::get();
-        return view('roles.create',compact('permission'));
+        $roles = Role::all();
+        return $roles;
     }
     
     
@@ -58,12 +53,12 @@ class RoleController extends Controller
     
     public function show($id)
     {
-        return Role::with('permissions')->find($id);
-        // return Permission::join("role_has_permissions","role_has_permissions.permission_id","=","permissions.id")
-        //     ->where("role_has_permissions.role_id",$id)
-        //     ->get();
+        // return Role::with('permissions')->find($id);
+        $role = Permission::join("role_has_permissions","role_has_permissions.permission_id","=","permissions.id")
+            ->where("role_has_permissions.role_id",$id)
+            ->get();
     
-        // return view('roles.show',compact('role','rolePermissions'));
+        return $role;
     }
     
     
@@ -96,10 +91,21 @@ class RoleController extends Controller
 
     }
    
+    // public function destroy($id)
+    // {
+    //     DB::table("roles")->where('id',$id)->delete();
+    //     return redirect()->route('roles.index')
+    //                     ->with('success','Role deleted successfully');
+    // }
+
     public function destroy($id)
     {
-        DB::table("roles")->where('id',$id)->delete();
-        return redirect()->route('roles.index')
-                        ->with('success','Role deleted successfully');
+        try {
+            $role = Role::findOrFail($id);
+            $role->delete();
+            return response()->json(['message' => 'Role deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete role'], 500);
+        }
     }
 }

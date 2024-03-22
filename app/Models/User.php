@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Subscription;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -45,14 +46,41 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($user) {
+            $user->generateSubscription();
+        });
+    }
+
+    public function generateSubscription()
+    {
+        // $subscription = $this->subscriptions()->create([
+        //     'name' => 'Free',
+        //     'duration' => '0',
+        //     'price' => '0',
+        //     'description' => '0',
+        //     'max_ads' => '1',
+        //     'max_images' => '1',
+        //     'type' => 'Gratuit',
+        // ]);
+
+        $subscription = Subscription::where('type', 'Gratuit')->first();
+
+
+        $this->subscriptions()->attach($subscription->id, ['activated_at' => now(), 'status' => 'Abonnement actif', 'end_date' => now()->addMinutes($subscription->duration)]);
+    }
+
     public function subscriptions():BelongsToMany
     {
-        return $this->belongsToMany(Subscription::class, 'user_subscription')
-        ->withPivot('status','activated_at','end_date')
+        return $this->belongsToMany(Subscription::class, 'user_subscriptions')
+        ->withPivot('id','status','activated_at','end_date')
         ->withTimestamps();
     }
 
-    public function ad(){
+    public function ads(){
         return $this->hasMany(Ad::class);
     }
 }

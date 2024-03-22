@@ -5,9 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AdController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\SubCategoryController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\VerificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,21 +34,37 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // });
 
 Route::apiResource('roles', RoleController::class)->middleware('auth:sanctum');
+Route::apiResource('permissions', PermissionController::class)->middleware('auth:sanctum');
+Route::apiResource('users', UserController::class)->middleware('auth:sanctum');
 Route::apiResource('ads', AdController::class)->middleware('auth:sanctum');
+Route::get('/livesearch', [AdController::class, 'searchAds'])->middleware('auth:sanctum');
+Route::get('/search', [AdController::class, 'search'])->middleware('auth:sanctum');
 Route::apiResource('categories', CategoryController::class)->middleware('auth:sanctum');
 Route::apiResource('subcategories', SubCategoryController::class)->middleware('auth:sanctum');
 
 
 Route::controller(SubscriptionController::class)->middleware('auth:sanctum')->group(function(){
-    Route::get('/add-subscriptions', 'addSubscriptions')->name('addSubscriptions');
+    // Route::get('/add-status', 'adStatus')->name('adStatus');
     Route::post('/create-subscription', 'createSubscription')->name('createSubscription');
     Route::get('/subscriptions-list', 'list')->name('list');
     Route::get('/showSubscription', 'show')->name('showSubscription');
+    Route::get('/getSubscriptionId', 'getSubscriptionId')->name('getSubscriptionId');
     Route::put('/activateSubscription/{id}', 'activate')->name('activateSubscription'); 
     Route::put('/statusSubscription/{id}', 'status')->name('SubscriptionStatus');
-    // Route::put('/affect-file/{id}', 'affect')->name('affectFile');
+    Route::get('/adStatus', 'adStatus')->name('adStatus');
 
  });
 
-Route::post('/auth/register', [AuthController::class, 'createUser']);
-Route::post('/auth/login', [AuthController::class, 'loginUser']);
+ Route::controller(AuthController::class)->group(function() {
+    Route::post('auth/register', 'register');
+    Route::post('auth/login', 'login');
+});
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/user-role', [UserController::class, 'getUserRoles'])->middleware('auth:sanctum');
+
+// Route::controller(AuthController::class)->group(function(){
+//     Route::post('/send-registration', 'sendsignup')->name('sendSignUp');
+//     Route::get('/send-registration-mail/{email}', 'sendsignupmail')->name('sendSignUpMail');
+// });
+// Route::get('/email/verify/send', [VerificationController::class, 'sendMail']);
+// Route::get('email/verify', [VerificationController::class, 'verify'])->middleware(middleware:'signed')->name(name:'verify-email');

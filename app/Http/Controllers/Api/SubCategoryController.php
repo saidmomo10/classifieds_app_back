@@ -8,10 +8,22 @@ use App\Http\Controllers\Controller;
 
 class SubCategoryController extends Controller
 {
-    public function show($id){
-        return SubCategory::find($id);
+    public function index(){
+        return SubCategory::all();
         
      }
+
+    // public function show($id){
+    //     return SubCategory::find($id);
+        
+    //  }
+
+     public function show($id){
+        $category=SubCategory::find($id);
+        $ads = Ad::where('subcategory_id', $id)->with('ads')->paginate(5);
+        return $ads;
+     }
+
 
     public function store(Request $request){  
         $request->validate([
