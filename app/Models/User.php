@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Comment;
 use App\Models\Subscription;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Auth;
@@ -82,5 +83,9 @@ class User extends Authenticatable
 
     public function ads(){
         return $this->hasMany(Ad::class);
+    }
+
+    public function comments(){
+        return $this->hasMany(Comment::class);
     }
 }

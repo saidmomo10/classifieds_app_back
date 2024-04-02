@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Image;
+use App\Models\Comment;
 use App\Models\SubCategory;
 use App\Models\UserSubscription;
 use Illuminate\Database\Eloquent\Model;
@@ -32,5 +33,9 @@ class Ad extends Model
 
     public function subscription(){
         return $this->belongsTo(Subscription::class);
+    }
+
+    public function comments(){
+        return $this->hasMany(Comment::class);
     }
 }

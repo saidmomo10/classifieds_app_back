@@ -114,13 +114,12 @@ class SubscriptionController extends Controller
     
     public function adStatus(){
         $user = Auth::user();
-        $key = $user->subscriptions()->where('status', 'Abonnement actif')->latest('activated_at')->first();
-        $subscription = $user->subscriptions()->where('status', 'Abonnement expire')->latest('activated_at')->first();
+        $subscription = $user->subscriptions()->latest('activated_at')->first();
 
-        return response()->json([
-            'subscription' => $subscription,
-            'key' => $key
-        ]);
+        $key = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first();
+        // $subscription = $user->subscriptions()->where('status', 'Abonnement expire')->latest('activated_at')->first();
+
+        return response()->json($key);
     }
     
     

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Ad;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -19,10 +20,11 @@ class SubCategoryController extends Controller
     //  }
 
      public function show($id){
-        $category=SubCategory::find($id);
-        $ads = Ad::where('subcategory_id', $id)->with('ads')->paginate(5);
-        return $ads;
-     }
+        $subCategory = SubCategory::find($id);
+        $ads = Ad::where('subcategory_id', $id)->with('subcategory', 'images')->get();
+        $number = $ads->count();
+        return ['ads' => $ads, 'subCategory' => $subCategory, 'number' => $number];
+    }
 
 
     public function store(Request $request){  
