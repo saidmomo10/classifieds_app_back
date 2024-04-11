@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Ad;
+use App\Models\User;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Notifications\CommentCreated;
 
 class CommentController extends Controller
 {
@@ -27,8 +31,8 @@ class CommentController extends Controller
      */
     public function index(Request $request)
     {
-        $comment = Comment::all();
-        return $comment;                                                                                                                                                            
+        $comment = Comment::with('user', 'ad')->get();
+        return response()->json($comment) ;                                                                                                                                                            
     }
     
     
@@ -48,9 +52,56 @@ class CommentController extends Controller
 
         ]);
         $comment->save();
+
+        $comment_status = 'New Comment';
+        $comment_id = $comment->id;
+        $adOwner = $comment->ad->user;
+        $ad = Ad::findOrFail($request->ad_id);
+
+        $adOwner->notify(new CommentCreated($user, $comment_id, $request->ad_id, $comment_status, $request->comment, $ad->title));
+
+
+        // $users = User::all();
+        // $comment_status = 'New Comment';
+        // $comment_id = $comment->id;
+        // $ad = Ad::findOrFail($request->ad_id);
+
+        // foreach($users as $user){
+        //     if($user->id !== Auth::user()->id){
+        //         $user->notify(new CommentCreated(Auth::user(), $comment_id, $request->ad_id, $comment_status, $request->comment, $ad->title));
+        //     }
+        // }
+
+
         return response()->json('succes', 201);
     }
     
+
+    // public function unreadNotifications()
+    // {
+    //     $unreadNotifications = auth('sanctum')->user()->unreadNotifications;
+    //     return response()->json($unreadNotifications);
+    // }
+
+    // public function markAsRead()
+    // {
+    //     Auth::user()->notifications->markAsRead();
+    //     return response()->json('success');
+    // }
+
+    public function unreadNotifications()
+    {
+        $unreadNotifications = auth()->user()->unreadNotifications;
+        return response()->json($unreadNotifications);
+    }
+
+    public function markAsRead()
+    {
+        auth()->user()->unreadNotifications->markAsRead();
+        return response()->json('success');
+    }
+
+
     public function show($id)
     {
         

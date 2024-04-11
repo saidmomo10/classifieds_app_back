@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Ad;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -50,8 +51,9 @@ class AdController extends Controller
     public function show($id)
 {
     $ad = Ad::with('images', 'subcategory', 'user', 'comments')->find($id);
+    $comment = Comment::with('user', 'ad')->where('ad_id', $ad->id)->get();
 
-    return response()->json($ad);
+    return ['comment' => $comment, 'ad' => $ad];
 }
 
     public function store(Request $request){
@@ -69,9 +71,9 @@ class AdController extends Controller
                 'description' => 'required',
                 'country' => 'required',
                 // 'city' => 'required',
-                // 'price' => 'required',
+                'price' => 'required',
                 // 'delivery_status' => 'required',
-                // 'state' => 'required',
+                'state' => 'required',
                 // 'price_type' => 'required',
                 // 'phone' => 'required',
                 'user_id' => 'required',
@@ -95,13 +97,13 @@ class AdController extends Controller
             // Créer l'annonce et capturer l'objet créé
             $ad = Ad::create([
                 'title' => $request->title,
-                // 'price' => $request->price,
+                'price' => $request->price,
                 'country' => $request->country,
                 // 'phone' => $request->phone,
                 // 'price_type' => $request->price_type,
                 // 'city' => $request->city,
                 // 'delivery_status' => $request->delivery_status,
-                // 'state' => $request->state,
+                'state' => $request->state,
                 'description' => $request->description,
                 'user_id' => $user->id,
                 'subcategory_id' => $request->subcategory_id,
@@ -124,9 +126,9 @@ class AdController extends Controller
                 'description' => 'required',
                 'country' => 'required',
                 // 'city' => 'required',
-                // 'price' => 'required',
+                'price' => 'required',
                 // 'delivery_status' => 'required',
-                // 'state' => 'required',
+                'state' => 'required',
                 // 'price_type' => 'required',
                 // 'phone' => 'required',
                 'user_id' => 'required',
@@ -190,13 +192,13 @@ class AdController extends Controller
                             // Créer l'annonce et capturer l'objet créé
                             $ad = Ad::create([
                                 'title' => $request->title,
-                                // 'price' => $request->price,
+                                'price' => $request->price,
                                 'country' => $request->country,
                                 // 'phone' => $request->phone,
                                 // 'price_type' => $request->price_type,
                                 // 'city' => $request->city,
                                 // 'delivery_status' => $request->delivery_status,
-                                // 'state' => $request->state,
+                                'state' => $request->state,
                                 'description' => $request->description,
                                 'user_id' => $user->id,
                                 'subcategory_id' => $request->subcategory_id,

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Comment;
+use App\Models\JobProfile;
 use App\Models\Subscription;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Auth;
@@ -87,5 +88,8 @@ class User extends Authenticatable
 
     public function comments(){
         return $this->hasMany(Comment::class);
+    }
+    public function jobprofile(){
+        return $this->hasOne(JobProfile::class);
     }
 }

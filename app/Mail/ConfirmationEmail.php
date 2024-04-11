@@ -16,9 +16,9 @@ class ConfirmationEmail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($confirmationCode)
     {
-        //
+        $this->confirmationCode = $confirmationCode;
     }
 
     /**
@@ -36,9 +36,9 @@ class ConfirmationEmail extends Mailable
      */
     public function content(): Content
     {
-        return new Content(
-            view: 'view.name',
-        );
+        return (new Content())
+        ->view('email.confirmation_email')
+        ->with('confirmationCode', $this->confirmationCode);
     }
 
     /**

@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
+    public function index(){
+        return Category::all();
+        
+     }
 
     public function show($id){
         return Category::find($id);

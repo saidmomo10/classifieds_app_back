@@ -10,8 +10,11 @@ use App\Http\Controllers\Controller;
 class SubCategoryController extends Controller
 {
     public function index(){
-        return SubCategory::all();
-        
+        $ads = SubCategory::select("id", "name", "icone")
+        ->withCount('ads')
+        ->get()
+        ->toArray();
+        return $ads;
      }
 
     // public function show($id){
@@ -30,8 +33,11 @@ class SubCategoryController extends Controller
     public function store(Request $request){  
         $request->validate([
             'name'=> "required",
+            "icone"=> "required",
             'category_id' => "required"
         ]);
+
+        $image = $request->icone->store("icones", "public");
 
         $subCategory = SubCategory::where('name',$request->name)->first();
         if($subCategory){
@@ -41,6 +47,7 @@ class SubCategoryController extends Controller
         //dd($request->name);
         $save = SubCategory::create([
             'name'=> $request->name,
+            'icone'=> $image,
             'category_id' => $request->category_id
         ]);
         
