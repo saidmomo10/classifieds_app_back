@@ -38,8 +38,8 @@ RUN composer install --no-dev --optimize-autoloader
 # Configurer Nginx
 COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
-# Exposer le port 80
-EXPOSE 80
+# Exposer le port 8000
+EXPOSE 8000
 
 # Commande de démarrage
 CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
