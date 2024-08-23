@@ -42,4 +42,4 @@ COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 
 # Commande de démarrage
-CMD ["php-fpm"]
+CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
