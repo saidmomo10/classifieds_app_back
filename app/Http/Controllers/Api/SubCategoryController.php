@@ -9,20 +9,22 @@ use App\Http\Controllers\Controller;
 
 class SubCategoryController extends Controller
 {
-    public function index(){
+
+    public function index(Request $request)
+    {
         $ads = SubCategory::select("id", "name", "icone")
         ->withCount('ads')
         ->get()
         ->toArray();
-        return $ads;
-     }
+        return $ads; 
+    }
 
     // public function show($id){
     //     return SubCategory::find($id);
         
     //  }
 
-     public function show($id){
+     public function show(Request $request, $id){
         $subCategory = SubCategory::find($id);
         $ads = Ad::where('subcategory_id', $id)->with('subcategory', 'images')->get();
         $number = $ads->count();

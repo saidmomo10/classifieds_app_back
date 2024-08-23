@@ -174,20 +174,20 @@ class AuthController extends Controller
       //     'confirmation_code' => 'required|string'
       // ]);
 
-    //   if($validate->fails()){
-    //     return response()->json([
-    //         'status' => 'failed',
-    //         'message' => 'Validation Error!',
-    //         'data' => $validate->errors(),
-    //     ], 403);  
-    // }
+      //   if($validate->fails()){
+      //     return response()->json([
+      //         'status' => 'failed',
+      //         'message' => 'Validation Error!',
+      //         'data' => $validate->errors(),
+      //     ], 403);  
+      // }
 
         // Récupérer l'utilisateur par son adresse e-mail
         $user = User::where('email', $request->email)->first();
         // return $user;
 
         // Vérifier si l'utilisateur existe et si le code de confirmation est correct
-        if ($user && $user->confirmation_code = $request->confirmation_code) {
+        if ($user && $user->confirmation_code == $request->confirmation_code) {
             // Mettre à jour le statut de confirmation de l'utilisateur
             $user->email_verified_at = now();
             $user->confirmation_code = null; // Optionnel : Effacer le code de confirmation après validation

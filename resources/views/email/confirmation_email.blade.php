@@ -5,6 +5,6 @@
 </head>
 <body>
     <h1>Confirmation Email</h1>
-    <p>Your confirmation code is: {{ $confirmationCode }}</p>
+    <p>Votre code de confirmation est: {{ $confirmationCode }} <a href="http://localhost:5173/">lien</a></p>
 </body>
 </html>

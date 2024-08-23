@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title')->nullable();
             $table->string('description')->nullable();
-            $table->string('country')->nullable();
+            $table->string('department')->nullable();
             $table->string('city')->nullable();
             $table->string('phone')->nullable();
             $table->integer('price')->nullable();

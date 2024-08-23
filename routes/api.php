@@ -45,35 +45,45 @@ Route::middleware(['auth:sanctum'])->group(function(){
 Route::apiResource('roles', RoleController::class)->middleware('auth:sanctum');
 Route::apiResource('permissions', PermissionController::class)->middleware('auth:sanctum');
 Route::apiResource('users', UserController::class)->middleware('auth:sanctum');
-Route::apiResource('ads', AdController::class)->middleware('auth:sanctum');
-Route::apiResource('comments', CommentController::class)->middleware('auth:sanctum');
-Route::get('/live', [AdController::class, 'getAds'])->middleware('auth:sanctum');
-Route::get('/livesearch', [AdController::class, 'searchAds'])->middleware('auth:sanctum');
-Route::get('/search', [AdController::class, 'search'])->middleware('auth:sanctum');
+// Route::apiResource('ads', AdController::class)->middleware('auth:sanctum');
+Route::apiResource('comments', CommentController::class);
+Route::get('/live', [AdController::class, 'getAds']);
+Route::get('/livesearch', [AdController::class, 'searchAds']);
+Route::get('/search', [AdController::class, 'search']);
 Route::patch('/ads/{id}/status', [AdController::class, 'updateSold'])->middleware('auth:sanctum');
 Route::get('/getAdUser', [AdController::class, 'getAdUser'])->middleware('auth:sanctum');
 Route::get('/myAds', [AdController::class, 'myAds'])->middleware('auth:sanctum');
 Route::apiResource('categories', CategoryController::class)->middleware('auth:sanctum');
-Route::apiResource('subcategories', SubCategoryController::class)->middleware('auth:sanctum');
+// Route::apiResource('subcategories', SubCategoryController::class)->middleware('auth:sanctum');
 
 
-Route::get('/subcategories', [SubCategoryController::class, 'index'])->name('index');
+Route::get('/subcategories', [SubCategoryController::class, 'index']);
 Route::get('/subcategories/{id}', [SubCategoryController::class, 'show'])->name('showSubcategories');
 Route::controller(SubCategoryController::class)->middleware('auth:sanctum')->group(function(){
     // Route::get('/add-status', 'adStatus')->name('adStatus');
-    Route::post('/subcategories', 'store')->name('store');
-    Route::put('/subcategories/{id}', 'update')->name('update');
-    Route::delete('/subcategories/{id}', 'delete')->name('delete');
+    Route::post('/subcategories', 'store');
+    Route::put('/subcategories/{id}', 'update');
+    Route::delete('/subcategories/{id}', 'delete');
+ });
+
+Route::get('/ads', [AdController::class, 'index'])->name('index');
+Route::get('/ads/{id}', [AdController::class, 'show'])->name('showads');
+Route::controller(AdController::class)->middleware('auth:sanctum')->group(function(){
+    // Route::get('/add-status', 'adStatus')->name('adStatus');
+    Route::post('/ads', 'store')->name('store');
+    Route::put('/ads/{id}', 'update')->name('update');
+    Route::delete('/ads/{id}', 'delete')->name('delete');
  });
 
 
 
 
-Route::get('/subscriptions-list', [SubscriptionController::class, 'list'])->name('list');
+Route::get('/subscriptions-list',[SubscriptionController::class, 'list'])->name('list');
 Route::controller(SubscriptionController::class)->middleware('auth:sanctum')->group(function(){
     // Route::get('/add-status', 'adStatus')->name('adStatus');
-    Route::post('/create-subscription', 'createSubscription')->name('createSubscription');
+    // Route::get('/subscriptions-list', 'list')->name('list');
     Route::get('/showSubscription', 'show')->name('showSubscription');
+    Route::post('/create-subscription', 'createSubscription')->name('createSubscription');
     Route::get('/getSubscriptionId', 'getSubscriptionId')->name('getSubscriptionId');
     Route::put('/activateSubscription/{id}', 'activate')->name('activateSubscription'); 
     Route::put('/statusSubscription/{id}', 'status')->name('SubscriptionStatus');
@@ -84,7 +94,7 @@ Route::controller(SubscriptionController::class)->middleware('auth:sanctum')->gr
  Route::controller(AuthController::class)->group(function() {
     Route::post('auth/register', 'register');
     Route::post('auth/login', 'login');
-    Route::post('auth/confirm', 'confirm');
+    Route::post('/confirm', 'confirm');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/user-role', [UserController::class, 'getUserRoles'])->middleware('auth:sanctum');

@@ -55,7 +55,8 @@ class SubscriptionController extends Controller
 
     public function list()
     {
-        return Subscription::all();
+        $subscriptions = Subscription::all();
+        return response()->json($subscriptions);
     }
 
     public function getSubscriptionId(){
@@ -74,7 +75,7 @@ class SubscriptionController extends Controller
             $key->pivot->save();
         } else if($key != null && $key->pivot->end_date < now()) {
             // Si l'abonnement est expiré, détacher l'abonnement expiré
-            $key->pivot->status = 'Abonnement expire'; 
+            $key->pivot->status = 'Aucun abonnement'; 
             $key->pivot->save();
             // if ($subscription != null) {
             //     $user->subscriptions()->detach($subscription->id);
@@ -101,7 +102,7 @@ class SubscriptionController extends Controller
             $key->pivot->save();
         } else if($key != null && $key->pivot->end_date < now()) {
             // Si l'abonnement est expiré, détacher l'abonnement expiré
-            $key->pivot->status = 'Abonnement expire'; 
+            $key->pivot->status = 'Aucun abonnement'; 
             $key->pivot->save();
             // if ($subscription != null) {
             //     $user->subscriptions()->detach($subscription->id);
@@ -117,7 +118,7 @@ class SubscriptionController extends Controller
         $subscription = $user->subscriptions()->latest('activated_at')->first();
 
         $key = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first();
-        // $subscription = $user->subscriptions()->where('status', 'Abonnement expire')->latest('activated_at')->first();
+        // $subscription = $user->subscriptions()->where('status', 'Aucun abonnement')->latest('activated_at')->first();
 
         return response()->json($key);
     }
@@ -134,7 +135,7 @@ class SubscriptionController extends Controller
 
     // // Recherche de l'abonnement payant actif
     // $subscription = $user->subscriptions()->where('status', 'Abonnement actif')->latest('activated_at')->first();
-    // $key = $user->subscriptions()->where('status', 'Abonnement expire')->latest('activated_at')->first();
+    // $key = $user->subscriptions()->where('status', 'Aucun abonnement')->latest('activated_at')->first();
 
     // // // Recherche de l'abonnement actif de l'utilisateur
     // // $key = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first();
@@ -145,7 +146,7 @@ class SubscriptionController extends Controller
     // //     $key->pivot->save();
     // // } else if($key != null && $key->pivot->end_date < now()) {
     // //     // Si l'abonnement est expiré, détacher l'abonnement expiré
-    // //     $key->pivot->status = 'Abonnement expire'; 
+    // //     $key->pivot->status = 'Aucun abonnement'; 
     // //     $key->pivot->save();
     // //     // if ($subscription != null) {
     // //     //     $user->subscriptions()->detach($subscription->id);
@@ -200,7 +201,7 @@ class SubscriptionController extends Controller
                      ->latest('activated_at')
                      ->skip(1) // Ignorer le dernier abonnement
                      ->first();
-        $key->pivot->status = 'Abonnement expire';
+        $key->pivot->status = 'Aucun abonnement';
         $key->pivot->save();
 
         return response()->json('Abonnement activé avec succès!', 201);

@@ -11,15 +11,19 @@ use Illuminate\Support\Facades\Storage;
 
 class AdController extends Controller
 {
-    public function index(){
-        $ads = Ad::with('images', 'subcategory')->paginate(6);
+    public function index()
+{
+    $ads = Ad::with('images', 'subcategory', 'user')
+            ->orderBy('created_at', 'desc') // Ordonner par date de création décroissante
+            ->paginate(6);
 
-        return $ads;
-    }
+    return $ads;
+}
+
 
     public function getAds(Request $request)
     {
-        $data = Ad::where('title', 'LIKE','%'.$request->keyword.'%')->with('images', 'subcategory')->get();
+        $data = Ad::where('title', 'LIKE','%'.$request->keyword.'%')->with('images', 'subcategory')->orderBy('created_at', 'desc')->get();
         return response()->json($data); 
     }
 
@@ -37,7 +41,7 @@ class AdController extends Controller
     }
 
     public function searchAds(Request $request){
-        $ads = Ad::with('images', 'subcategory', 'user')->get();
+        $ads = Ad::with('images', 'subcategory', 'user')->orderBy('created_at', 'desc')->get();
         return response()->json($ads);
     }
 
@@ -50,7 +54,7 @@ class AdController extends Controller
 
     public function show($id)
 {
-    $ad = Ad::with('images', 'subcategory', 'user', 'comments')->find($id);
+    $ad = Ad::with('images', 'subcategory', 'user')->find($id);
     $comment = Comment::with('user', 'ad')->where('ad_id', $ad->id)->get();
 
     return ['comment' => $comment, 'ad' => $ad];
@@ -69,13 +73,12 @@ class AdController extends Controller
             $rules = [
                 'title' => 'required',
                 'description' => 'required',
-                'country' => 'required',
-                // 'city' => 'required',
-                'price' => 'required',
-                // 'delivery_status' => 'required',
+                'department' => 'required',
+                'city' => 'required',
+                'delivery_status' => 'required',
                 'state' => 'required',
-                // 'price_type' => 'required',
-                // 'phone' => 'required',
+                'price_type' => 'required',
+                'phone' => 'required',
                 'user_id' => 'required',
                 'user_subscription_id' => 'required',
                 'subcategory_id' => 'required',
@@ -98,11 +101,11 @@ class AdController extends Controller
             $ad = Ad::create([
                 'title' => $request->title,
                 'price' => $request->price,
-                'country' => $request->country,
-                // 'phone' => $request->phone,
-                // 'price_type' => $request->price_type,
-                // 'city' => $request->city,
-                // 'delivery_status' => $request->delivery_status,
+                'department' => $request->department,
+                'phone' => $request->phone,
+                'price_type' => $request->price_type,
+                'city' => $request->city,
+                'delivery_status' => $request->delivery_status,
                 'state' => $request->state,
                 'description' => $request->description,
                 'user_id' => $user->id,
@@ -124,13 +127,12 @@ class AdController extends Controller
             $rules = [
                 'title' => 'required',
                 'description' => 'required',
-                'country' => 'required',
-                // 'city' => 'required',
-                'price' => 'required',
-                // 'delivery_status' => 'required',
+                'department' => 'required',
+                'city' => 'required',
+                'delivery_status' => 'required',
                 'state' => 'required',
-                // 'price_type' => 'required',
-                // 'phone' => 'required',
+                'price_type' => 'required',
+                'phone' => 'required',
                 'user_id' => 'required',
                 'user_subscription_id' => 'required',
                 'subcategory_id' => 'required',
@@ -193,11 +195,10 @@ class AdController extends Controller
                             $ad = Ad::create([
                                 'title' => $request->title,
                                 'price' => $request->price,
-                                'country' => $request->country,
-                                // 'phone' => $request->phone,
-                                // 'price_type' => $request->price_type,
-                                // 'city' => $request->city,
-                                // 'delivery_status' => $request->delivery_status,
+                                'phone' => $request->phone,
+                                'price_type' => $request->price_type,
+                                'city' => $request->city,
+                                'delivery_status' => $request->delivery_status,
                                 'state' => $request->state,
                                 'description' => $request->description,
                                 'user_id' => $user->id,
@@ -261,7 +262,7 @@ class AdController extends Controller
         $rules = [
             'title' => 'required',
             'description' => 'required',
-            'country' => 'required',
+            'department' => 'required',
             'user_id' => 'required',
             'user_subscription_id' => 'required',
             'subcategory_id' => 'required',
@@ -273,7 +274,7 @@ class AdController extends Controller
         // Mettre à jour les données de l'annonce avec les nouvelles données de la requête
         $ad->update([
             'title' => $request->title,
-            'country' => $request->country,
+            'department' => $request->department,
             'description' => $request->description,
             'subcategory_id' => $request->subcategory_id,
         ]);
@@ -341,7 +342,7 @@ class AdController extends Controller
     //     // Validez les données de la deuxième étape si nécessaire
     //     $validatedData = $request->validate([
     //         'price' => 'required|string',
-    //         'country' => $request->country,
+    //         'department' => $request->department,
     //         'city' => $request->city,
     //         'description' => $request->description,
     //         'delivery_status' => $request->delivery_status,
