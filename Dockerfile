@@ -1,20 +1,45 @@
-FROM php:7.4-apache
-D
+# Utiliser une image PHP officielle avec FPM
+FROM php:8.1-fpm
+
+# Installer les dépendances nécessaires
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
+    build-essential \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl \
+    libonig-dev \
+    libxml2-dev \
     libzip-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && a2enmod rewrite \
-    && docker-php-ext-install pdo_pgsql zip
+    zip \
+    nginx
 
+# Installer les extensions PHP
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-COPY . /var/www/html
+# Installer Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN chown -R www-data:www-data /var/www/html /var/www/html/storage /var/www/html/bootstrap/cache
+# Copier le code de l'application
+COPY . /var/www
 
-WORKDIR /var/www/html
+# Définir le répertoire de travail
+WORKDIR /var/www
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer install --no-dev --optimize-autoloader
+# Installer les dépendances Composer
+RUN composer install --no-dev --optimize-autoloader
 
-EXPOSE 80
+# Configurer Nginx
+COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+
+# Exposer le port 8000
+EXPOSE 8000
+
+# Commande de démarrage
+CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
