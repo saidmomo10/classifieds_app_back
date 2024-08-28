@@ -35,7 +35,7 @@ services:
       POSTGRES_USER: clasifieds_user
       POSTGRES_PASSWORD: UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - app-network
 
