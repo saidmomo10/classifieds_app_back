@@ -55,8 +55,8 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://kaolo-annonce-dpmtyzd73-saidmomo10s-projects.vercel.app/'),
-    'frontend_url' => env('FRONTEND_URL', 'https://kaolo-annonce-dpmtyzd73-saidmomo10s-projects.vercel.app/'),
+    'url' => env('APP_URL', 'https://kaolo-annonce-e6wf4ka0j-saidmomo10s-projects.vercel.app/'),
+    'frontend_url' => env('FRONTEND_URL', 'https://kaolo-annonce-e6wf4ka0j-saidmomo10s-projects.vercel.app/'),
 
     'asset_url' => env('ASSET_URL'),
 
