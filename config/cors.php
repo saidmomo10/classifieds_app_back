@@ -30,7 +30,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://kaolo-annonce-dpmtyzd73-saidmomo10s-projects.vercel.app'],
+    'allowed_origins' => ['http://localhost:8000','https://kaolo-annonce-dpmtyzd73-saidmomo10s-projects.vercel.app'],
 
     'allowed_origins_patterns' => [],
 
