@@ -10,7 +10,7 @@ services:
       - APP_KEY=base64:WA25IVJMRzuGDu68SoKIo3OUmr2LvJbWav1uyn9M6u8=
       - APP_URL=https://classifieds-app-back.onrender.com/
       - DB_CONNECTION=pgsql
-      - DB_HOST=db
+      - DB_HOST=dpg-cr44fbrv2p9s73cljje0-a
       - DB_PORT=5432
       - DB_DATABASE=clasifieds
       - DB_USERNAME=clasifieds_user
