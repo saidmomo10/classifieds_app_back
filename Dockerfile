@@ -1,45 +1,24 @@
-# Utiliser une image PHP officielle avec FPM
+# Utiliser une image PHP officielle comme image parent
 FROM php:8.3-fpm
 
-# Installer les dépendances nécessaires
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    locales \
-    zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
-    unzip \
-    git \
-    curl \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    nginx
-
-# Installer les extensions PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Installer les dépendances système nécessaires
+RUN apt-get update && apt-get install -y libpq-dev libicu-dev libxml2-dev git unzip libzip-dev && \
+    docker-php-ext-install pdo pdo_pgsql intl xml zip
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copier le code de l'application
-COPY . /var/www
-
 # Définir le répertoire de travail
 WORKDIR /var/www
 
-# Installer les dépendances Composer
+# Copier le contenu de votre application Laravel dans le conteneur
+COPY . .
+
+# Installer les dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Configurer Nginx
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
-
-# Exposer le port 8000
+# Exposer le port sur lequel l'application fonctionnera
 EXPOSE 8000
 
-# Commande de démarrage
-CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
+# Définir la commande pour exécuter l'application
+CMD ["php-fpm"]

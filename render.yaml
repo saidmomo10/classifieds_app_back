@@ -1,8 +1,14 @@
 services:
   - type: web
-    name: my-laravel-app
+    name: laravel-app
     env: docker
-    dockerfile: Dockerfile
-    ports:
-      - port: 8000
-        targetPort: 8000
+    docker:
+      dockerfile_path: Dockerfile
+    plan: free
+    build:
+      dockerfile_path: Dockerfile
+    start_command: ["php-fpm"]
+    health_check:
+      path: /
+      interval: 30s
+      timeout: 10s
