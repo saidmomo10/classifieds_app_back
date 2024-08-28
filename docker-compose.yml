@@ -8,7 +8,7 @@ services:
     environment:
       - APP_ENV=production
       - APP_KEY=base64:WA25IVJMRzuGDu68SoKIo3OUmr2LvJbWav1uyn9M6u8=
-      - APP_URL=https://dashboard.render.com/d/dpg-cr44fbrv2p9s73cljje0-a
+      - APP_URL=https://classifieds-app-back.onrender.com/
       - DB_CONNECTION=pgsql
       - DB_HOST=db
       - DB_PORT=5432
