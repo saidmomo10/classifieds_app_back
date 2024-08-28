@@ -55,8 +55,8 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
-    'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+    'url' => env('APP_URL', 'https://kaolo-annonce-dpmtyzd73-saidmomo10s-projects.vercel.app/'),
+    'frontend_url' => env('FRONTEND_URL', 'https://kaolo-annonce-dpmtyzd73-saidmomo10s-projects.vercel.app/'),
 
     'asset_url' => env('ASSET_URL'),
 
