@@ -31,6 +31,3 @@ EXPOSE 8000
 
 # Commande pour démarrer le serveur Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
-
-# Exécuter les migrations (peut être déplacé dans un script de déploiement séparé)
-RUN php artisan migrate --force
