@@ -23,9 +23,6 @@ COPY . .
 # Installer les dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Exécuter les migrations
-RUN php artisan migrate --force
-
 # Copier les fichiers de configuration Nginx (si applicable)
 # COPY ./nginx/default.conf /etc/nginx/conf.d/
 
