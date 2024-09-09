@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - APP_KEY=base64:WA25IVJMRzuGDu68SoKIo3OUmr2LvJbWav1uyn9M6u8=
+      - APP_URL=https://classifieds-app-back.onrender.com/
+      - DB_CONNECTION=pgsql
+      - DB_HOST=dpg-cr44fbrv2p9s73cljje0-a
+      - DB_PORT=5432
+      - DB_DATABASE=clasifieds
+      - DB_USERNAME=clasifieds_user
+      - DB_PASSWORD=UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=rmissimawu@gmail.com
+      - MAIL_PASSWORD=dnhvuhiulnsikjju
+      - MAIL_ENCRYPTION=tls
+      - MAIL_FROM_ADDRESS=rmissimawu@gmail.com
+      - MAIL_FROM_NAME="${APP_NAME}"
+    migrate:
+      build: .
+      command: php artisan migrate --force
+      environment:
+        - APP_ENV=production
+        - DB_CONNECTION=pgsql
+        - DB_HOST=dpg-cr44fbrv2p9s73cljje0-a
+        - DB_PORT=5432
+        - DB_DATABASE=clasifieds
+        - DB_USERNAME=clasifieds_user
+        - DB_PASSWORD=UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: clasifieds
+      POSTGRES_USER: clasifieds_user
+      POSTGRES_PASSWORD: UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
