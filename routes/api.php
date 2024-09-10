@@ -53,7 +53,7 @@ Route::get('/search', [AdController::class, 'search']);
 Route::patch('/ads/{id}/status', [AdController::class, 'updateSold'])->middleware('auth:sanctum');
 Route::get('/getAdUser', [AdController::class, 'getAdUser'])->middleware('auth:sanctum');
 Route::get('/myAds', [AdController::class, 'myAds'])->middleware('auth:sanctum');
-Route::apiResource('categories', CategoryController::class)->middleware('auth:sanctum');
+Route::apiResource('categories', CategoryController::class);
 // Route::apiResource('subcategories', SubCategoryController::class)->middleware('auth:sanctum');
 
 
