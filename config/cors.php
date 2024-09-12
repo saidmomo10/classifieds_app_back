@@ -30,7 +30,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'https://kaolo-annonce-1.onrender.com'],
+    'allowed_origins' => ['http://localhost:5173', 'https://kaolo-annonce-1.onrender.com', 'https://kaolo-annonce.vercel.app/'],
 
     'allowed_origins_patterns' => [],
 
