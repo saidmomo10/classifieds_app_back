@@ -20,23 +20,38 @@ return [
         'login',
         'logout',
         'register',
-        // 'user/password',
-        // 'forgot-password',
-        // 'reset-password',
         'sanctum/csrf-cookie',
-        // 'user/profile-information',
-        // 'email/verification-notification',
     ],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'https://kaolo-annonce-1.onrender.com', 'https://kaolo-annonce.vercel.app/'],
+    'allowed_origins' => [
+        'http://localhost:5173', 
+        'https://kaolo-annonce-1.onrender.com', 
+        'https://kaolo-annonce.vercel.app/',
+        'https://classifiedsappback-production.up.railway.app'
+    ],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Accept',
+        'Authorization',
+        'Content-Type',
+        'Cookie',
+        'DNT',
+        'Origin',
+        'User-Agent',
+        'X-Requested-With',
+    ],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'Accept',
+        'Authorization',
+        'Origin',
+        'Content-Type',
+        'X-Requested-With',
+    ],
 
     'max_age' => 0,
 
