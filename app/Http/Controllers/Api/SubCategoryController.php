@@ -16,6 +16,7 @@ class SubCategoryController extends Controller
         ->withCount('ads')
         ->get()
         ->toArray();
+        \Log::info($ads);
         return response()->json($ads); 
     }
 
