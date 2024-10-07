@@ -31,7 +31,9 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->foreignId('user_subscription_id')
-            ->contrained('user_subscriptions');
+            ->nullable()
+            ->contrained('user_subscriptions')
+            ->onDelete('cascade');
             // $table->foreignId('user_subscription_id')->nullable();
             // $table->foreign('user_subscription_id')->references('id')->on('user_subscriptions')->onDelete('cascade');
             $table->timestamps();
