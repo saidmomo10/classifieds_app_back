@@ -23,6 +23,17 @@ services:
       - MAIL_ENCRYPTION=tls
       - MAIL_FROM_ADDRESS=rmissimawu@gmail.com
       - MAIL_FROM_NAME="${APP_NAME}"
+    migrate_rest:
+      build: .
+      command: php artisan migrate:reset --force
+      environment:
+        - APP_ENV=production
+        - DB_CONNECTION=pgsql
+        - DB_HOST=dpg-cr44fbrv2p9s73cljje0-a
+        - DB_PORT=5432
+        - DB_DATABASE=clasifieds
+        - DB_USERNAME=clasifieds_user
+        - DB_PASSWORD=UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
     migrate:
       build: .
       command: php artisan migrate --force
