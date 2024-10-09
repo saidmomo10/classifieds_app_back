@@ -32,6 +32,14 @@ COPY docker-entrypoint.sh /usr/local/bin/
 # Donner des droits d'exécution au script
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+RUN php artisan db:seed --class=PermissionTableSeeder
+
+RUN php artisan db:seed --class=CategoryTableSeeder
+
+RUN php artisan db:seed --class=SubCategoryTableSeeder
+
+RUN php artisan db:seed --class=CreateAdminUserSeeder
+
 RUN php artisan storage:link
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
