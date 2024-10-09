@@ -26,6 +26,10 @@ RUN composer install --no-dev --optimize-autoloader
 # Copier les fichiers de configuration Nginx (si applicable)
 # COPY ./nginx/default.conf /etc/nginx/conf.d/
 
+RUN php artisan migrate:reset --force
+
+RUN php artisan migrate --force
+
 RUN php artisan storage:link
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
