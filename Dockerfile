@@ -23,23 +23,22 @@ COPY . .
 # Installer les dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Copier les fichiers de configuration Nginx (si applicable)
-# COPY ./nginx/default.conf /etc/nginx/conf.d/
-
 # Copier le script d'entrée
 COPY docker-entrypoint.sh /usr/local/bin/
 
 # Donner des droits d'exécution au script
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# Attendre la disponibilité de la base de données et exécuter les migrations
+RUN php artisan migrate --force
+
+# Exécuter les seeders
 RUN php artisan db:seed --class=PermissionTableSeeder
-
 RUN php artisan db:seed --class=CategoryTableSeeder
-
 RUN php artisan db:seed --class=SubCategoryTableSeeder
-
 RUN php artisan db:seed --class=CreateAdminUserSeeder
 
+# Créer le lien de stockage
 RUN php artisan storage:link
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
