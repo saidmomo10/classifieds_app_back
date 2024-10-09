@@ -11,5 +11,10 @@ php artisan migrate:reset --force
 php artisan migrate --force
 php artisan storage:link
 
+RUN php artisan db:seed --class=PermissionTableSeeder
+RUN php artisan db:seed --class=CategoryTableSeeder
+RUN php artisan db:seed --class=SubCategoryTableSeeder
+RUN php artisan db:seed --class=CreateAdminUserSeeder
+
 # Exécuter la commande donnée
 exec "$@"
