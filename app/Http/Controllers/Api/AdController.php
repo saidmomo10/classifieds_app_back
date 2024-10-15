@@ -194,7 +194,6 @@ class AdController extends Controller
             'subcategory_id' => $request->subcategory_id,
         ]);
 
-        // Retourner une réponse JSON indiquant que l'annonce a été mise à jour avec succès
         return response()->json('Annonce mise à jour avec succès', 200);
     }
 
@@ -237,57 +236,4 @@ class AdController extends Controller
 
 
 
-
-
-
-    //  public function stepOne(Request $request)
-    // {
-    //     // Validez les données de la première étape si nécessaire
-    //     $validatedData = $request->validate([
-    //         'title' => 'required|string',
-    //         // 'subcategory_id' => "required"
-    //     ]);
-
-        
-    //     return response()->json(['data' => $validatedData]);
-    // }
-
-    // public function stepTwo(Request $request)
-    // {
-    //     // Validez les données de la deuxième étape si nécessaire
-    //     $validatedData = $request->validate([
-    //         'price' => 'required|string',
-    //         'department' => $request->department,
-    //         'city' => $request->city,
-    //         'description' => $request->description,
-    //         'delivery_status' => $request->delivery_status,
-    //         // 'image1' => "required|image",
-    //         // 'image2' => "required|image",
-    //         // 'image3' => "required|image",
-    //         // Autres règles de validation pour la deuxième étape
-    //     ]);
-
-    //     // $mainly_picture = null;
-    //     // $secondary_picture = null;
-    //     // $tertiary_picture = null;
-
-    //     // $mainly_picture = Storage::disk()->put('mainly_pictures', $request->file('image1'));
-    //     // $secondary_picture = Storage::disk()->put('secondary_pictures', $request->file('image2'));
-    //     // $tertiary_picture = Storage::disk()->put('tertiary_pictures', $request->file('image3'));
-
-    //     return response()->json(['data' => $validatedData]);
-    // }
-
-    // public function stepThree(Request $request)
-    // {
-    //     // Validez les données de la troisième étape si nécessaire
-    //     $validatedData = $request->validate([
-    //         // Règles de validation pour la troisième étape
-    //     ]);
-
-
-    //     $formData = Ad::create($validatedData);
-
-    //     return response()->json(['data' => $formData]);
-    // }
 }
