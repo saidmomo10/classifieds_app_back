@@ -34,6 +34,25 @@ Route::middleware(['auth:sanctum'])->group(function(){
 
 });
 
+Route::get('/auth/redirect/{provider}', function ($provider) {
+    return Socialite::driver($provider)->stateless()->redirect();
+});
+
+Route::get('/auth/callback/{provider}', function (Request $request, $provider) {
+    $socialUser = Socialite::driver($provider)->stateless()->user();
+
+    // Vérifiez si l'utilisateur existe ou créez un nouvel utilisateur
+    $user = User::firstOrCreate(
+        ['email' => $socialUser->getEmail()],
+        ['name' => $socialUser->getName(), 'password' => bcrypt(str_random(24))]
+    );
+
+    // Créer un token avec Sanctum
+    $token = $user->createToken($socialUser->getEmail())->plainTextToken;
+
+    return response()->json(['token' => $token, 'user' => $user]);
+});
+
 
 
 // Route::prefix('ad')->middleware('web')->group(function () {
