@@ -12,9 +12,9 @@ services:
       - DB_CONNECTION=pgsql
       - DB_HOST=dpg-cr44fbrv2p9s73cljje0-a
       - DB_PORT=5432
-      - DB_DATABASE=clasifieds
-      - DB_USERNAME=clasifieds_user
-      - DB_PASSWORD=UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
+      - DB_DATABASE=clasifieds_pov3
+      - DB_USERNAME=clasifieds_pov3_user
+      - DB_PASSWORD=M5PtH9lbhCK1H03cjiPJmN8x6ukCKqin
       - MAIL_MAILER=smtp
       - MAIL_HOST=smtp.gmail.com    
       - MAIL_PORT=587
@@ -29,11 +29,11 @@ services:
       environment:
         - APP_ENV=production
         - DB_CONNECTION=pgsql
-        - DB_HOST=dpg-cr44fbrv2p9s73cljje0-a
+        - DB_HOST=dpg-cs92ib0gph6c73bvi170-a
         - DB_PORT=5432
-        - DB_DATABASE=clasifieds
-        - DB_USERNAME=clasifieds_user
-        - DB_PASSWORD=UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
+        - DB_DATABASE=clasifieds_pov3
+        - DB_USERNAME=clasifieds_pov3_user
+        - DB_PASSWORD=M5PtH9lbhCK1H03cjiPJmN8x6ukCKqin
     depends_on:
       - db
     networks:
@@ -42,9 +42,9 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: clasifieds
-      POSTGRES_USER: clasifieds_user
-      POSTGRES_PASSWORD: UyYCQKTo2oYRS3Fb1HY0jox2TPGbltds
+      POSTGRES_DB: clasifieds_pov3
+      POSTGRES_USER: clasifieds_pov3_user
+      POSTGRES_PASSWORD: M5PtH9lbhCK1H03cjiPJmN8x6ukCKqin
     ports:
       - "5433:5432"
     networks:
