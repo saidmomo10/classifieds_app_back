@@ -26,13 +26,17 @@ RUN composer install --no-dev --optimize-autoloader
 # Copier les fichiers de configuration Nginx (si applicable)
 # COPY ./nginx/default.conf /etc/nginx/conf.d/
 
-# Exécuter les migrations
-RUN php artisan migrate --force
-
+# Créer le lien de stockage
 RUN php artisan storage:link
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
 EXPOSE 8000
+
+# Attendre que la base de données soit prête avant d'exécuter les migrations
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Commande pour démarrer le serveur Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
