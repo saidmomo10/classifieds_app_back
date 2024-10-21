@@ -21,10 +21,7 @@ services:
     command: >
       sh -c "
         php artisan migrate --force &&
-        php artisan db:seed --class=PermissionTableSeeder &&
-        php artisan db:seed --class=CategoryTableSeeder &&
-        php artisan db:seed --class=SubCategoryTableSeeder &&
-        php artisan db:seed --class=CreateAdminUserSeeder &&
+        php artisan db:seed --force &&
         php artisan serve --host=0.0.0.0 --port=8000
       "
 
