@@ -29,10 +29,10 @@ RUN composer install --no-dev --optimize-autoloader
 RUN php artisan storage:link
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
-EXPOSE 8000
+# EXPOSE 8000
 
 # Exécuter les migrations et démarrer le serveur Laravel
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0
 
 # Commande pour démarrer le serveur Laravel
 #CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
