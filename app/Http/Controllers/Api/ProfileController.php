@@ -14,18 +14,32 @@ class ProfileController extends Controller
         return $request->user()->only(['name', 'email']);
     }
 
-    public function update(UpdateProfileRequest $request)
+    public function update(Request $request)
     {
-        $user = $request->user();
-        $validatedData = $request->validated();
-        
-        $user->update($validatedData);
-        $user = $user->refresh();
+        $user = Auth::user();
+        // $user = $request->user();
 
-        $success['user'] = $user;
-        $success['success'] = 'Profile mis à jour';
+        $request->validate([
+            'name' => 'required|string',
+            'email' => 'required',
+            'avatar' => 'required'
+        ]);
 
-        return response()->json($success, 201);
+        // Si une nouvelle image est téléversée
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($user->avatar && Storage::exists('public/' . $user->avatar)) {
+                Storage::delete('public/' . $user->avatar);
+            }
+
+            // Enregistrer la nouvelle image
+            $imagePath = $request->file('avatar')->store('avatar', 'public');
+            $user->avatar = $imagePath;
+        }
+
+        $user->save();
+
+        return response()->json(['success' => 'Image modifiée avec succès', 'user' => $user]);
     }
 
 

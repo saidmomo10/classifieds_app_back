@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Mail\ConfirmationEmail;
+use App\Mail\ResetPasswordMail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -21,6 +23,7 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+      $image = $request->icone->store("avatar", "public");
       $validate = Validator::make($request->all(), [
           'name' => 'required|string|max:250',
           'email' => 'required|string|max:250|unique:users,email',
@@ -120,45 +123,45 @@ class AuthController extends Controller
 
 
 
-    public function upload_user_photo(Request $request){
-        // check if image has been received from form
-        if($request->file('avatar')){
-          // check if user has an existing avatar
-          if($this->guard()->user()->avatar != NULL){
-            // delete existing image file
-            Storage::disk('user_avatars')->delete($this->guard()->user()->avatar);
-          }
+    // public function upload_user_photo(Request $request){
+    //     // check if image has been received from form
+    //     if($request->file('avatar')){
+    //       // check if user has an existing avatar
+    //       if($this->guard()->user()->avatar != NULL){
+    //         // delete existing image file
+    //         Storage::disk('user_avatars')->delete($this->guard()->user()->avatar);
+    //       }
       
-          // processing the uploaded image
-          $avatar_name = $this->random_char_gen(20).'.'.$request->file('avatar')->getClientOriginalExtension();
-          $avatar_path = $request->file('avatar')->storeAs('',$avatar_name, 'user_avatars');
+    //       // processing the uploaded image
+    //       $avatar_name = $this->random_char_gen(20).'.'.$request->file('avatar')->getClientOriginalExtension();
+    //       $avatar_path = $request->file('avatar')->storeAs('',$avatar_name, 'user_avatars');
       
-          // Update user's avatar column on 'users' table
-          $profile = User::find($request->user()->id);
-          $profile->avatar = $avatar_path;
+    //       // Update user's avatar column on 'users' table
+    //       $profile = User::find($request->user()->id);
+    //       $profile->avatar = $avatar_path;
       
-          if($profile->save()){
-            return response()->json([
-              'status'    =>  'success',
-              'message'   =>  'Profile Photo Updated!',
-              'avatar_url'=>  url('storage/user-avatar/'.$avatar_path)
-            ]);
-          }else{
-            return response()->json([
-              'status'    => 'failure',
-              'message'   => 'failed to update profile photo!',
-              'avatar_url'=> NULL
-            ]);
-          }
+    //       if($profile->save()){
+    //         return response()->json([
+    //           'status'    =>  'success',
+    //           'message'   =>  'Profile Photo Updated!',
+    //           'avatar_url'=>  url('storage/user-avatar/'.$avatar_path)
+    //         ]);
+    //       }else{
+    //         return response()->json([
+    //           'status'    => 'failure',
+    //           'message'   => 'failed to update profile photo!',
+    //           'avatar_url'=> NULL
+    //         ]);
+    //       }
       
-        }
+    //     }
       
-        return response()->json([
-          'status'    => 'failure',
-          'message'   => 'No image file uploaded!',
-          'avatar_url'=> NULL
-        ]);
-      }
+    //     return response()->json([
+    //       'status'    => 'failure',
+    //       'message'   => 'No image file uploaded!',
+    //       'avatar_url'=> NULL
+    //     ]);
+    //   }
 
 
       public function confirm(Request $request)
@@ -203,5 +206,41 @@ class AuthController extends Controller
         
     }
 
-    
+    public function sendResetPasswordLink(Request $request){
+        $request->validate(['email' => 'required|email|exists:users,email']);
+
+        $status = Password::sendResetLink(
+            $request->only('email'),
+            function ($user, $token) {
+                // Redirige vers l'URL de réinitialisation du frontend avec le token
+                $resetUrl = 'http://localhost:5173/reset?token=' . $token . '&email=' . urlencode($user->email);
+
+                Mail::to($user->email)->send(new ResetPasswordMail($resetUrl));
+            }
+        );
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['status' => 'success', 'message' => __($status)], 200)
+            : response()->json(['status' => 'failed', 'message' => __($status)], 400);
+    }
+
+    public function resetPassword(Request $request){
+        $request->validate([
+            'token' => 'required|string',
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['status' => 'success', 'message' => __($status)], 200)
+            : response()->json(['status' => 'failed', 'message' => __($status)], 400);
+    }
 }

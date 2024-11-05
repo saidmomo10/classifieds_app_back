@@ -164,6 +164,7 @@ class AdController extends Controller
     public function update($id, Request $request){
         // Récupérer l'utilisateur authentifié
         $user = Auth::user();
+        $admin = $user->hasRole('Admin');
 
         // Récupérer l'annonce à mettre à jour
         $ad = Ad::findOrFail($id);
@@ -179,9 +180,28 @@ class AdController extends Controller
             'description' => 'required',
             'department' => 'required',
             'user_id' => 'required',
-            'user_subscription_id' => 'required',
+            // 'user_subscription_id' => 'required',
             'subcategory_id' => 'required',
+            // 'images.*' => [
+            //     'required',
+            //     'image',
+            //     function ($attribute, $value, $fail) {
+            //         if (!$value->isValid()) {
+            //             $fail('Une erreur est survenue lors du téléchargement de l\'image.');
+            //         }
+            //     },
+            // ],
         ];
+
+        if (!$admin) {
+            $rules['user_subscription_id'] = 'required';
+    
+            if ($key) {
+                $rules['images'][] = 'max:' . $key->max_images;
+            } else if ($expire) {
+                $rules['images'][] = 'max:3';
+            }
+        }
 
         // Valider la requête
         $validation = $request->validate($rules);
@@ -198,14 +218,16 @@ class AdController extends Controller
         return response()->json('Annonce mise à jour avec succès', 200);
     }
 
-    public function destroy($id)
+    public function delete($id)
     {
-        try {
-            $ad = Ad::findOrFail($id);
-            $ad->delete();
-            return response()->json(['message' => 'Annonce supprimée avec succès'], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to delete ad'], 500);
+        $ad = Ad::findOrFail($id);
+        $result = $ad->delete();
+
+        if($result){
+            return ["result" => "supprimé"];
+        }
+        else{
+            return ["result" => "erreur"];
         }
     }
 

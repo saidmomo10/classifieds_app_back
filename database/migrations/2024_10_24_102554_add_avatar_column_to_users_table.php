@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('user-avatar')->nullable();
+            $table->string('avatar')->default('avatar/avatar.svg');
         });
     }
 

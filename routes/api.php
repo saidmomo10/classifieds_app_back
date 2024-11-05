@@ -95,6 +95,8 @@ Route::controller(SubscriptionController::class)->middleware('auth:sanctum')->gr
     Route::post('auth/register', 'register');
     Route::post('auth/login', 'login');
     Route::post('/confirm', 'confirm');
+    Route::post('/password/email', 'sendResetPasswordLink');
+    Route::post('/password/reset', 'resetPassword');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/user-role', [UserController::class, 'getUserRoles'])->middleware('auth:sanctum');
