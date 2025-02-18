@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
@@ -80,6 +80,19 @@ class User extends Authenticatable
         return $this->belongsToMany(Subscription::class, 'user_subscriptions')
         ->withPivot('id','status','activated_at','end_date')
         ->withTimestamps();
+    }
+
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar); // Si avatar personnalisé, retourne son URL
+        }
+
+        $email = strtolower(trim($this->email));
+        $hash = md5($email);
+        return "https://www.gravatar.com/avatar/{$hash}?s=200&d=mp";
     }
 
     public function ads(){

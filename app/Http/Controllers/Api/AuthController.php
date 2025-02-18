@@ -23,25 +23,31 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-      $image = $request->icone->store("avatar", "public");
       $validate = Validator::make($request->all(), [
           'name' => 'required|string|max:250',
           'email' => 'required|string|max:250|unique:users,email',
-          'password' => 'required|string|min:8|confirmed'
+          'password' => 'required|string|min:8|confirmed',
+          'avatar' => 'nullable|image|mimes:jpg,png,jpeg|max:2048' // Avatar optionnel
       ]);
 
-      if($validate->fails()){
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public'); // Stocker l'image
+        }
+
+        if($validate->fails()){
           return response()->json([
               'status' => 'failed',
               'message' => 'Validation Error!',
               'data' => $validate->errors(),
           ], 403);
-      }
+        }
 
       $user = User::create([
           'name' => $request->name,
           'email' => $request->email,
-          'password' => Hash::make($request->password)
+          'password' => Hash::make($request->password),
+          'avatar' => $avatarPath
       ]);
 
       $data['token'] = $user->createToken($request->email)->plainTextToken;

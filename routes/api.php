@@ -25,6 +25,10 @@ use App\Http\Controllers\Api\VerificationController;
 |
 */
 
+Route::get("/test-me", function () {
+    return 'Hello from Laravel!';
+});
+
 Route::middleware(['auth:sanctum'])->group(function(){
     Route::get('/profile', function (Request $request) {
         return $request->user();
