@@ -27,12 +27,13 @@ class AuthController extends Controller
           'name' => 'required|string|max:250',
           'email' => 'required|string|max:250|unique:users,email',
           'password' => 'required|string|min:8|confirmed',
-          'avatar' => 'nullable|image|mimes:jpg,png,jpeg|max:2048' // Avatar optionnel
+          'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
       ]);
 
+        // Stockage de l'avatar s'il est fourni
         $avatarPath = null;
         if ($request->hasFile('avatar')) {
-            $avatarPath = $request->file('avatar')->store('avatars', 'public'); // Stocker l'image
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
         }
 
         if($validate->fails()){

@@ -57,6 +57,7 @@ Route::get('/search', [AdController::class, 'search']);
 Route::patch('/ads/{id}/status', [AdController::class, 'updateSold'])->middleware('auth:sanctum');
 Route::get('/getAdUser', [AdController::class, 'getAdUser'])->middleware('auth:sanctum');
 Route::get('/myAds', [AdController::class, 'myAds'])->middleware('auth:sanctum');
+Route::get('/annonces/department/{department}', [AdController::class, 'getByDepartment'])->middleware('auth:sanctum');
 Route::apiResource('categories', CategoryController::class);
 // Route::apiResource('subcategories', SubCategoryController::class)->middleware('auth:sanctum');
 
@@ -72,6 +73,7 @@ Route::controller(SubCategoryController::class)->middleware('auth:sanctum')->gro
 
 Route::get('/ads', [AdController::class, 'index'])->name('index');
 Route::get('/ads/{id}', [AdController::class, 'show'])->name('showads');
+Route::get('/most-visited', [AdController::class, 'mostVisitedAds'])->name('mostVisitedAds');
 Route::controller(AdController::class)->middleware('auth:sanctum')->group(function(){
     // Route::get('/add-status', 'adStatus')->name('adStatus');
     Route::post('/ads', 'store')->name('store');

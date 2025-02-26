@@ -25,6 +25,11 @@ class AdController extends Controller
         return response()->json($data); 
     }
 
+    public function getByDepartment($department) {
+        $annonces = Ad::where('department', $department)->with('images', 'subcategory')->orderBy('created_at', 'desc')->get();
+        return response()->json($annonces);
+    }
+
     public function myAds(){
         $user = auth('sanctum')->user();
         $all = Ad::with('subcategory', 'images')->where('user_id', $user->id)->get();
@@ -50,9 +55,17 @@ class AdController extends Controller
 
     public function show($id){
         $ad = Ad::with('images', 'subcategory', 'user')->find($id);
+        
         $comment = Comment::with('user', 'ad')->where('ad_id', $ad->id)->get();
 
+        $ad->increment('views');
+
         return ['comment' => $comment, 'ad' => $ad];
+    }
+
+    public function mostVisitedAds(){
+        $ads = Ad::with('images', 'subcategory', 'user')->orderByDesc('views')->limit(5)->get();
+        return response()->json($ads);
     }
 
     public function store(Request $request){

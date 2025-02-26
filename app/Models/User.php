@@ -82,17 +82,15 @@ class User extends Authenticatable implements MustVerifyEmail
         ->withTimestamps();
     }
 
-    protected $appends = ['avatar_url'];
-
-    public function getAvatarUrlAttribute(): string
+    public function getAvatarAttribute()
     {
-        if ($this->avatar) {
-            return asset('storage/' . $this->avatar); // Si avatar personnalisé, retourne son URL
+        if ($this->attributes['avatar']) {
+            return asset("storage/" . $this->attributes['avatar']); // Avatar stocké localement
         }
 
-        $email = strtolower(trim($this->email));
+        $email = trim(strtolower($this->email));
         $hash = md5($email);
-        return "https://www.gravatar.com/avatar/{$hash}?s=200&d=mp";
+        return "https://www.gravatar.com/avatar/$hash?s=200&d=mp"; // Image Gravatar ou par défaut
     }
 
     public function ads(){
