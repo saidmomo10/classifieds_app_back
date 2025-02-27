@@ -23,16 +23,15 @@ COPY . .
 # Installer les dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Copier les fichiers de configuration Nginx (si applicable)
-# COPY ./nginx/default.conf /etc/nginx/conf.d/
-
+# Lier le stockage
 RUN php artisan storage:link
 
+# Copier le script entrypoint.sh dans le conteneur et lui donner les droits d'exécution
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Définir le point d'entrée pour exécuter les migrations et seeders au démarrage
+ENTRYPOINT ["/entrypoint.sh"]
+
 # Exposer le port sur lequel l'application Laravel fonctionnera
-# EXPOSE 8000
-
-# Exécuter les migrations et démarrer le serveur Laravel
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0
-
-# Commande pour démarrer le serveur Laravel
-#CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+EXPOSE 8000

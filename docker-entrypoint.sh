@@ -1,20 +1,18 @@
-# #!/bin/bash
+#!/bin/sh
 
-# # Attendre que la base de données soit disponible avant de lancer les migrations
-# until php -r "new PDO('mysql:host=${DB_HOST};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}');" 2>/dev/null; do
-#     echo "Waiting for MySQL database connection..."
-#     sleep 5php artisan migrate:reset --force
-# done
+# Attendre que la base de données soit prête (optionnel, remplace `db` par ton service DB)
+until nc -z -v -w30 db 3306; do
+  echo "⏳ En attente de la base de données..."
+  sleep 5
+done
+echo "✅ Base de données prête !"
 
-# # Lancer les migrations
+# Exécuter les migrations et seeders
+php artisan migrate --force
+php artisan db:seed --class=PermissionTableSeeder
+php artisan db:seed --class=CategoryTableSeeder
+php artisan db:seed --class=SubCategoryTableSeeder
+php artisan db:seed --class=CreateAdminUserSeeder
 
-# php artisan migrate --force
-# php artisan storage:link
-
-# RUN php artisan db:seed --class=PermissionTableSeeder
-# RUN php artisan db:seed --class=CategoryTableSeeder
-# RUN php artisan db:seed --class=SubCategoryTableSeeder
-# RUN php artisan db:seed --class=CreateAdminUserSeeder
-
-# # Exécuter la commande donnée
-# exec "$@"
+# Lancer Laravel
+exec php artisan serve --host=0.0.0.0 --port=8000

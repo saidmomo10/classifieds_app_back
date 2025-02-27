@@ -9,11 +9,11 @@ services:
       - "8000:8000"
     environment:
       DB_CONNECTION: pgsql
-      DB_HOST: dpg-cs92ib0gph6c73bvi170-a
+      DB_HOST: dpg-cuvebnaj1k6c73ebsau0-a
       DB_PORT: 5432
-      DB_DATABASE: clasifieds_pov3
-      DB_USERNAME: classifieds_pov3_user
-      DB_PASSWORD: M5PtH9lbhCK1H03cjiPJmN8x6ukCKqin
+      DB_DATABASE: Kaolo Annonce
+      DB_USERNAME: kaolo_user
+      DB_PASSWORD: 4QE7OyHW8nXVrX1lgsTdPZQqB4WfCWxL
     volumes:
       - .:/var/www
     depends_on:
@@ -28,9 +28,9 @@ services:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_DB: clasifieds_pov3
-      POSTGRES_USER: classifieds_pov3_user
-      POSTGRES_PASSWORD: M5PtH9lbhCK1H03cjiPJmN8x6ukCKqin
+      POSTGRES_DB: Kaolo Annonce
+      POSTGRES_USER: kaolo_user
+      POSTGRES_PASSWORD: 4QE7OyHW8nXVrX1lgsTdPZQqB4WfCWxL
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
