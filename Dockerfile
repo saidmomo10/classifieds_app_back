@@ -30,8 +30,10 @@ RUN chmod +x /wait-for-it.sh
 # Exposer le port sur lequel l'application Laravel fonctionnera
 # EXPOSE 8000
 
+# Exécuter les migrations et démarrer le serveur Laravel
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0
+
 # Attendre que PostgreSQL soit prêt avant d'exécuter les migrations et les seeders
-RUN /wait-for-it.sh postgresql:5432 -- php artisan migrate --force
 RUN /wait-for-it.sh postgresql:5432 -- php artisan db:seed --class=PermissionTableSeeder
 RUN /wait-for-it.sh postgresql:5432 -- php artisan db:seed --class=CategoryTableSeeder
 RUN /wait-for-it.sh postgresql:5432 -- php artisan db:seed --class=SubCategoryTableSeeder
