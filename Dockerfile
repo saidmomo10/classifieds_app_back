@@ -23,18 +23,21 @@ COPY . .
 # Installer les dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Lier le stockage
-RUN php artisan storage:link
+# Copier les fichiers de configuration Nginx (si applicable)
+# COPY ./nginx/default.conf /etc/nginx/conf.d/
 
-# Exécuter les migrations et seeders
-RUN php artisan migrate --force \
-    && php artisan db:seed --class=PermissionTableSeeder \
-    && php artisan db:seed --class=CategoryTableSeeder \
-    && php artisan db:seed --class=SubCategoryTableSeeder \
-    && php artisan db:seed --class=CreateAdminUserSeeder
+RUN php artisan storage:link
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
 # EXPOSE 8000
 
+# Exécuter les migrations et démarrer le serveur Laravel
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0
+
+RUN php artisan db:seed --class=PermissionTableSeeder
+RUN php artisan db:seed --class=CategoryTableSeeder
+RUN php artisan db:seed --class=SubCategoryTableSeeder
+RUN php artisan db:seed --class=CreateAdminUserSeeder
+
 # Commande pour démarrer le serveur Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
+#CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
