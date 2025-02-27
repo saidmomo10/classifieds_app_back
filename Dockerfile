@@ -26,12 +26,15 @@ RUN composer install --no-dev --optimize-autoloader
 # Lier le stockage
 RUN php artisan storage:link
 
-# Copier le script entrypoint.sh dans le conteneur et lui donner les droits d'exécution
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Définir le point d'entrée pour exécuter les migrations et seeders au démarrage
-ENTRYPOINT ["/entrypoint.sh"]
+# Exécuter les migrations et seeders
+RUN php artisan migrate --force \
+    && php artisan db:seed --class=PermissionTableSeeder \
+    && php artisan db:seed --class=CategoryTableSeeder \
+    && php artisan db:seed --class=SubCategoryTableSeeder \
+    && php artisan db:seed --class=CreateAdminUserSeeder
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
-EXPOSE 8000
+# EXPOSE 8000
+
+# Commande pour démarrer le serveur Laravel
+CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
