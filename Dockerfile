@@ -32,7 +32,7 @@ RUN php artisan storage:link
 # EXPOSE 8000
 
 # Exécuter les migrations et démarrer le serveur Laravel
-CMD php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0
+CMD php artisan migrate && php artisan db:seed && php artisan serve --host=0.0.0.0
 
 # Commande pour démarrer le serveur Laravel
 #CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
