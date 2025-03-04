@@ -86,32 +86,79 @@ class SubscriptionController extends Controller
         return $key->pivot->id;
     }
 
-    public function show(){
+    // public function show(){
+    //     $user = Auth::user();
+    //     // $currentMonthAdsCount = $user->ads()->count();
+    
+    //     // Recherche de l'abonnement payant actif
+    //     $subscription = $user->subscriptions()->latest('activated_at')->first();
+    
+    //     // Recherche de l'abonnement actif de l'utilisateur
+    //     $key = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first();
+    
+    //     // Vérification de la validité de l'abonnement actif
+    //     if($key != null && $key->pivot->end_date > now()){
+    //         $key->pivot->status = 'Abonnement actif'; 
+    //         $key->pivot->save();
+    //     } else if($key != null && $key->pivot->end_date < now()) {
+    //         // Si l'abonnement est expiré, détacher l'abonnement expiré
+    //         $key->pivot->status = 'Aucun abonnement'; 
+    //         $key->pivot->save();
+    //         // if ($subscription != null) {
+    //         //     $user->subscriptions()->detach($subscription->id);
+    //         // }
+    //     }
+    
+    //     // return $key->pivot->id;
+    //     return $key->pivot;
+    // }
+
+    public function show()
+    {
         $user = Auth::user();
-        // $currentMonthAdsCount = $user->ads()->count();
-    
-        // Recherche de l'abonnement payant actif
+
+        // Vérifier si l'utilisateur a un abonnement
         $subscription = $user->subscriptions()->latest('activated_at')->first();
-    
-        // Recherche de l'abonnement actif de l'utilisateur
-        $key = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first();
-    
-        // Vérification de la validité de l'abonnement actif
-        if($key != null && $key->pivot->end_date > now()){
-            $key->pivot->status = 'Abonnement actif'; 
-            $key->pivot->save();
-        } else if($key != null && $key->pivot->end_date < now()) {
-            // Si l'abonnement est expiré, détacher l'abonnement expiré
-            $key->pivot->status = 'Aucun abonnement'; 
-            $key->pivot->save();
-            // if ($subscription != null) {
-            //     $user->subscriptions()->detach($subscription->id);
-            // }
+        if (!$subscription) {
+            return response()->json([
+                'status' => 'Aucun abonnement',
+                'subscription' => null
+            ]);
         }
-    
-        // return $key->pivot->id;
-        return $key->pivot;
+
+        // Recherche de l'abonnement actif lié à cet utilisateur
+        $key = $user->subscriptions()
+            ->where('subscription_id', $subscription->id)
+            ->latest('activated_at')
+            ->first();
+
+        // Si aucun abonnement actif n'est trouvé
+        if (!$key) {
+            return response()->json([
+                'status' => 'Aucun abonnement',
+                'subscription' => null
+            ]);
+        }
+
+        // Vérifier la validité de l'abonnement
+        $isActive = $key->pivot->end_date > now();
+        $key->pivot->status = $isActive ? 'Abonnement actif' : 'Aucun abonnement';
+        $key->pivot->save();
+
+        // Retourner les détails de l'abonnement
+        return response()->json([
+            'status' => $key->pivot->status,
+            'subscription' => [
+                'id' => $key->id,
+                'name' => $key->name,
+                'start_date' => $key->pivot->start_date,
+                'end_date' => $key->pivot->end_date,
+                'price' => $key->price ?? null,
+                'type' => $key->type
+            ]
+        ]);
     }
+
     
     public function adStatus(){
         $user = Auth::user();
