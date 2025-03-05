@@ -26,7 +26,6 @@ RUN composer install --no-dev --optimize-autoloader
 # Copier les fichiers de configuration Nginx (si applicable)
 # COPY ./nginx/default.conf /etc/nginx/conf.d/
 
-RUN php artisan storage:link
 
 # Exposer le port sur lequel l'application Laravel fonctionnera
 # EXPOSE 8000
@@ -34,6 +33,7 @@ RUN php artisan storage:link
 # Exécuter les migrations et démarrer le serveur Laravel
 # CMD php artisan serve --host=0.0.0.0
 CMD php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0
+RUN php artisan storage:link
 
 # Commande pour démarrer le serveur Laravel
 #CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
