@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             SubCategoryTableSeeder::class,
             FreeSubscriptionTableSeeder::class,
             CreateAdminUserSeeder::class,
-            AdSeeder::class,
+            // AdSeeder::class,
         ]);
     }
 }
