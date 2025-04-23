@@ -23,24 +23,34 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required',
-            'avatar' => 'required'
         ]);
 
-        // Si une nouvelle image est téléversée
-        if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image si elle existe
-            if ($user->avatar && Storage::exists('public/' . $user->avatar)) {
-                Storage::delete('public/' . $user->avatar);
-            }
-
-            // Enregistrer la nouvelle image
-            $imagePath = $request->file('avatar')->store('avatar', 'public');
-            $user->avatar = $imagePath;
-        }
-
+        $user->update($request->all());
         $user->save();
 
         return response()->json(['success' => 'Image modifiée avec succès', 'user' => $user]);
+    }
+
+    public function complete(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'ifu' => 'required|string|max:100',
+            'rccm' => 'required|string|max:100',
+            'website' => 'required|url|max:255',
+        ]);
+
+        $user->update([
+            'ifu' => $request->ifu,
+            'rccm' => $request->rccm,
+            'website' => $request->website,
+        ]);
+
+        return response()->json([
+            'success' => 'Profil modifié avec succès',
+            'user' => $user
+        ]);
     }
 
 

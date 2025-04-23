@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Ad;
 
+use App\Models\Ad;
 use App\Models\File;
+use FedaPay\FedaPay;
+use FedaPay\Customer;
+use FedaPay\Transaction;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\UserSubscription;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
@@ -61,9 +66,7 @@ class SubscriptionController extends Controller
 
     public function getSubscriptionId(){
         $user = Auth::user();
-        // $currentMonthAdsCount = $user->ads()->count();
     
-        // Recherche de l'abonnement payant actif
         $subscription = $user->subscriptions()->latest('activated_at')->first();
     
         // Recherche de l'abonnement actif de l'utilisateur
@@ -77,41 +80,9 @@ class SubscriptionController extends Controller
             // Si l'abonnement est expiré, détacher l'abonnement expiré
             $key->pivot->status = 'Aucun abonnement'; 
             $key->pivot->save();
-            // if ($subscription != null) {
-            //     $user->subscriptions()->detach($subscription->id);
-            // }
         }
-    
-        // return $key->pivot->id;
-        return $key->pivot->id;
+            return $key->pivot->id;
     }
-
-    // public function show(){
-    //     $user = Auth::user();
-    //     // $currentMonthAdsCount = $user->ads()->count();
-    
-    //     // Recherche de l'abonnement payant actif
-    //     $subscription = $user->subscriptions()->latest('activated_at')->first();
-    
-    //     // Recherche de l'abonnement actif de l'utilisateur
-    //     $key = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first();
-    
-    //     // Vérification de la validité de l'abonnement actif
-    //     if($key != null && $key->pivot->end_date > now()){
-    //         $key->pivot->status = 'Abonnement actif'; 
-    //         $key->pivot->save();
-    //     } else if($key != null && $key->pivot->end_date < now()) {
-    //         // Si l'abonnement est expiré, détacher l'abonnement expiré
-    //         $key->pivot->status = 'Aucun abonnement'; 
-    //         $key->pivot->save();
-    //         // if ($subscription != null) {
-    //         //     $user->subscriptions()->detach($subscription->id);
-    //         // }
-    //     }
-    
-    //     // return $key->pivot->id;
-    //     return $key->pivot;
-    // }
 
     public function show()
     {
@@ -169,196 +140,189 @@ class SubscriptionController extends Controller
 
         return response()->json($key);
     }
-    
-    
-    
 
-
-
-
-
-    // $user = Auth::user();
-    // // $currentMonthAdsCount = $user->ads()->count();
-
-    // // Recherche de l'abonnement payant actif
-    // $subscription = $user->subscriptions()->where('status', 'Abonnement actif')->latest('activated_at')->first();
-    // $key = $user->subscriptions()->where('status', 'Aucun abonnement')->latest('activated_at')->first();
-
-    // // // Recherche de l'abonnement actif de l'utilisateur
-    // // $key = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first();
-
-    // // // Vérification de la validité de l'abonnement actif
-    // // if($key != null && $key->pivot->end_date > now()){
-    // //     $key->pivot->status = 'Abonnement actif'; 
-    // //     $key->pivot->save();
-    // // } else if($key != null && $key->pivot->end_date < now()) {
-    // //     // Si l'abonnement est expiré, détacher l'abonnement expiré
-    // //     $key->pivot->status = 'Aucun abonnement'; 
-    // //     $key->pivot->save();
-    // //     // if ($subscription != null) {
-    // //     //     $user->subscriptions()->detach($subscription->id);
-    // //     // }
-    // // }
-
-    // // // return $key->pivot->id;
-    // return response()->json([
-    //     'key' => $key,
-    //     'subscription' => $subscription
-    // ]);
-
-
-
-
-
-
-
-
-
-
-
-
-    public function activate($id)
+    public function createTransaction(Request $request, $id)
     {
-        $user = auth()->user();
-        // dd($user);
-    //     if (!$user) {
-    //     return back()->with('message', 'Utilisateur non trouvé.');
-    // }
-        $subscription = Subscription::findOrFail($id);
+        $user = Auth::user();
+        $subscription = Subscription::findOrFail($id); // Vérifie que l'abonnement existe.
 
-        // Vérifier si l'abonnement est déjà activé
-        // if ($subscription->end_date >= now()) {
-        //     return back()->with('message', 'Cet abonnement est déjà actif.');
-        // }
+        // Création du client FedaPay
+        try {
+            FedaPay::setApiKey(env('FEDAPAY_SECRET_KEY', 'sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8'));
+            FedaPay::setEnvironment(env('FEDAPAY_ENV', 'sandbox'));
+            
+            $customer = Customer::create([
+                'firstname' => $user->name,
+                'lastname' => '',
+                'phone' => [
+                    'number' => '22990000000', // Remplace par le vrai numéro de l'utilisateur
+                    'country' => 'bj'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la création du client FedaPay'], 500);
+        }
 
-        // if($user->subscriptions()->where('subscription_id', $subscription->id)->exists()){
-        //     return back()->with('message', 'Cet abonnement est déjà actif.');
-        // }
+        // Création de la transaction
+        try {
+            FedaPay::setApiKey("sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8");
+            FedaPay::setEnvironment('sandbox');
+            
+            $transaction = Transaction::create([
+                'description' => 'Payment for subscription',
+                'amount' => '1000', // Utilisation du prix de l'abonnement
+                'currency' => ['iso' => 'XOF'],
+                // 'callback_url' => 'https://example.com/payment/callback' // URL non nécessaire ici
+            ]);
 
-        // $subscription->status = 'Abonnement actif';
+            // Activation immédiate de l'abonnement **sans vérifier le paiement**
+            $user->subscriptions()->attach($subscription->id, [
+                'activated_at' => now(),
+                'status' => 'Abonnement actif',
+                'end_date' => now()->addMinutes($subscription->duration)
+            ]);
 
-        // Activer l'abonnement en mettant à jour les dates
-        // $subscription->user_id = auth()->user()->id;
-        $user->subscriptions()->attach($subscription->id,['activated_at' => now(), 'status' => 'Abonnement actif', 'end_date' => now()->addMinutes($subscription->duration)]);
-        // $subscription->start_date = now();
-        // $subscription->end_date = now()->addMinutes($subscription->duration); // ou utilisez la logique appropriée
-        $subscription->save();
-        // $this->status($subscriptions);
-        $key = $user->subscriptions()
-                     ->latest('activated_at')
-                     ->skip(1) // Ignorer le dernier abonnement
-                     ->first();
-        $key->pivot->status = 'Aucun abonnement';
-        $key->pivot->save();
+            // Désactiver l'ancien abonnement s'il y en a un
+            $previousSubscription = $user->subscriptions()
+                                        ->latest('activated_at')
+                                        ->skip(1) // Ignorer le dernier abonnement
+                                        ->first();
+            if ($previousSubscription) {
+                $previousSubscription->pivot->status = 'Aucun abonnement';
+                $previousSubscription->pivot->save();
+            }
 
-        return response()->json('Abonnement activé avec succès!', 201);
-        
-
-        // return back()->with('success', 'Abonnement activé avec succès!');
+            return response()->json([
+                'message' => 'Abonnement activé avec succès!',
+                'transaction_id' => $transaction->id,
+                'payment_url' => $transaction->generateToken()->url
+            ], 201);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la création de la transaction'], 500);
+        }
     }
 
 
 
+    // public function createTransaction(Request $request, $id)
+    // {
+    //     $user = Auth::user();
+    //     $subscription = Subscription::findOrFail($id);
 
+    //     try {
+    //         FedaPay::setApiKey("sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8");
+    //         FedaPay::setEnvironment('sandbox');
 
+    //         $customer = \FedaPay\Customer::create([
+    //             'firstname' => $user->name,
+    //             'lastname' => '',
+    //             'phone' => [
+    //                 'number' => '22990000000',
+    //                 'country' => 'bj'
+    //             ]
+    //         ]);
 
+    //         $transaction = Transaction::create([
+    //             'description' => 'Payment for subscription',
+    //             'amount' => '1000', 
+    //             'currency' => ['iso' => 'XOF'],
+    //             'callback_url' => url('/api/fedapay/callback') // Callback avec ngrok
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => 'Transaction créée avec succès!',
+    //             'transaction_id' => $transaction->id,
+    //             'payment_url' => $transaction->generateToken()->url
+    //         ], 201);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'Erreur lors de la création de la transaction'], 500);
+    //     }
+    // }
+
+    // public function handleCallback(Request $request)
+    // {
+    //     Log::info('Callback reçu de FedaPay', $request->all());
+
+    //     try {
+    //         $transactionId = $request->input('transaction_id');
+    //         $subscriptionId = $request->input('subscription_id');
+
+    //         // Vérifie si l'ID de la transaction est présent
+    //         if (!$transactionId) {
+    //             Log::error('Aucun ID de transaction reçu');
+    //             return response()->json(['error' => 'ID de transaction manquant'], 400);
+    //         }
+
+    //         // Vérifier que l'ID de l'abonnement est bien présent
+    //         if (!$subscriptionId) {
+    //             Log::error('Aucun ID d\'abonnement reçu');
+    //             return response()->json(['error' => 'ID d\'abonnement manquant'], 400);
+    //         }
+
+    //         // Récupérer la transaction depuis FedaPay
+    //         FedaPay::setApiKey("sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8");
+    //         FedaPay::setEnvironment('sandbox');
+
+    //         $transaction = Transaction::retrieve($transactionId);
+    //         Log::info('Transaction récupérée', ['transaction' => $transaction]);
+
+    //         // Vérifier si le paiement a été approuvé
+    //         if ($transaction->status !== 'approved') {
+    //             Log::error('Paiement non approuvé', ['status' => $transaction->status]);
+    //             return response()->json(['error' => 'Paiement non approuvé'], 400);
+    //         }
+
+    //         // Trouver l'utilisateur par email
+    //         $user = User::where('email', $transaction->customer->email)->first();
+    //         if (!$user) {
+    //             Log::error('Utilisateur non trouvé', ['email' => $transaction->customer->email]);
+    //             return response()->json(['error' => 'Utilisateur non trouvé'], 404);
+    //         }
+
+    //         // Récupérer l'abonnement à activer
+    //         $subscription = Subscription::findOrFail($subscriptionId);
+
+    //         // Activer l'abonnement pour l'utilisateur
+    //         $user->subscriptions()->attach($subscription->id, [
+    //             'activated_at' => now(),
+    //             'status' => 'Abonnement actif',
+    //             'end_date' => now()->addMinutes($subscription->duration)
+    //         ]);
+            
+    //         // Désactiver l'ancien abonnement si nécessaire
+    //         $previousSubscription = $user->subscriptions()
+    //                                         ->latest('activated_at')
+    //                                         ->skip(1) // Ignorer le dernier abonnement
+    //                                         ->first();
+    //         if ($previousSubscription) {
+    //             $previousSubscription->pivot->status = 'Aucun abonnement';
+    //             $previousSubscription->pivot->save();
+    //         }
+
+    //         Log::info('Abonnement activé pour l\'utilisateur', ['user_id' => $user->id, 'subscription_id' => $subscription->id]);
+
+    //         return response()->json(['message' => 'Paiement validé et abonnement activé']);
+    //     } catch (\Exception $e) {
+    //         Log::error('Erreur lors de la vérification du paiement', ['error' => $e->getMessage()]);
+    //         return response()->json(['error' => 'Erreur lors de la vérification du paiement'], 500);
+    //     }
+    // }
 
 
     
 
 
+    public function affect($id){
+        $subscription = Subscription::findOrFail($id);
+        // $file = File::findOrfail($id);
+        $fileIds = request('file_ids');
 
+        // $file->subscriptions()->attach($subscription->id);
 
-
-    // public function activate($id)
-    // {
-    //     $user = auth()->user();
-    //     // dd($user);
-    // //     if (!$user) {
-    // //     return back()->with('message', 'Utilisateur non trouvé.');
-    // // }
-    //     $subscription = Subscription::findOrFail($id);
-
-    //     // Vérifier si l'abonnement est déjà activé
-    //     // if ($subscription->end_date >= now()) {
-    //     //     return back()->with('message', 'Cet abonnement est déjà actif.');
-    //     // }
-
-    //     // if($user->subscriptions()->where('subscription_id', $subscription->id)->exists()){
-    //     //     return back()->with('message', 'Cet abonnement est déjà actif.');
-    //     // }
-
-    //     // $subscription->status = 'Abonnement actif';
-
-    //     // Activer l'abonnement en mettant à jour les dates
-    //     // $subscription->user_id = auth()->user()->id;
-
-    //     $key = $user->subscriptions()->latest('activated_at')->first();
-
-
-    //     if ($subscription->type === 'Payant') {
-    //         // Pour les abonnements gratuits, définissez la date de fin à un mois à partir de maintenant
-    //         // $subscription->end_date = now()->addMonth();
-    //         $user->subscriptions()->attach($subscription->id,['activated_at' => now(), 'status' => 'Abonnement actif', 'end_date' => now()->addMinutes($subscription->duration)]);
-
-    //     } else {
-    //         // Pour les abonnements payants, laissez la date de fin null
-    //         $user->subscriptions()->attach($subscription->id,['activated_at' => now(), 'status' => 'Mode gratuit', 'end_date' => null]);
-    //     }
-
-
-
-    //     // $user->subscriptions()->attach($subscription->id,['activated_at' => now(), 'status' => 'Abonnement actif', 'end_date' => now()->addMinutes($subscription->duration)]);
-    //     // $subscription->start_date = now();
-    //     // $subscription->end_date = now()->addMinutes($subscription->duration); // ou utilisez la logique appropriée
-    //     $subscription->save();
-    //     // $this->status($subscriptions);
+        $subscription->files()->attach($fileIds);
         
-    //     $pivotId = $user->subscriptions()->where('subscription_id', $subscription->id)->latest('activated_at')->first()->pivot;
-
-    // // Si vous souhaitez retourner l'ID de la table pivot dans la réponse JSON
-    // return response()->json(['pivot_id' => $pivotId, 'subscription' => $subscription], 201);
-    //     // return back()->with('success', 'Abonnement activé avec succès!');
-    // }
-
-    // // public function status($id)
-    // // {
-    // //     $subscriptions = Subscription::findOrFail($id);
-
-    // //     // Vérifier si l'abonnement est déjà activé
-    // //     if ($subscriptions->end_date <= now()) {
-    // //         $subscriptions->status = 'Abonnement non actif'; 
-    // //         $subscriptions->save();
-    // //     }else{
-    // //         $subscriptions->status = 'Abonnement actif'; 
-    // //         $subscriptions->save();
-    // //     }
-        
-    // //     $subscriptions->save();
-    // //     dd($subscriptions);
-    // //     return back();
-    // // }
-
-
-
-
-
-
-
-        public function affect($id){
-            $subscription = Subscription::findOrFail($id);
-            // $file = File::findOrfail($id);
-            $fileIds = request('file_ids');
-
-            // $file->subscriptions()->attach($subscription->id);
-
-            $subscription->files()->attach($fileIds);
-        //     if($subscription->files()->where('file_id', $file->id)->exists()){
-        //     return back()->with('message', 'Cet abonnement est déjà actif.');
-        // }
-            
-            // $subscription->save();
-            
-            return back()->with('success', 'Chaine affecté avec succès!');
-        }
+        return back()->with('success', 'Chaine affecté avec succès!');
+    }
 }

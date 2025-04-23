@@ -31,50 +31,47 @@ class CommentController extends Controller
      */
     public function index(Request $request)
     {
-        $comment = Comment::with('user', 'ad')->get();
+        $comment = Comment::with('user', 'ad')->orderBy('created_at', 'desc')->get();
         return response()->json($comment) ;                                                                                                                                                            
     }
     
     
     public function store(Request $request)
-    {
-        $request->validate([
-            'comment' => 'required',
-            'user_id' => 'required',
-            'ad_id' => 'required',
-        ]);
-        $user = auth('sanctum')->user();
+{
+    $request->validate([
+        'comment' => 'required',
+        'ad_id' => 'required',
+    ]);
     
+    $user = auth('sanctum')->user();
+    
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+    }
+    
+    try {
         $comment = new Comment([
             'user_id' => $user->id,
             'ad_id' => $request->ad_id,
             'comment' => $request->input('comment'),
-
         ]);
         $comment->save();
-
+        
         $comment_status = 'New Comment';
         $comment_id = $comment->id;
-        $adOwner = $comment->ad->user;
         $ad = Ad::findOrFail($request->ad_id);
-
-        $adOwner->notify(new CommentCreated($user, $comment_id, $request->ad_id, $comment_status, $request->comment, $ad->title));
-
-
-        // $users = User::all();
-        // $comment_status = 'New Comment';
-        // $comment_id = $comment->id;
-        // $ad = Ad::findOrFail($request->ad_id);
-
-        // foreach($users as $user){
-        //     if($user->id !== Auth::user()->id){
-        //         $user->notify(new CommentCreated(Auth::user(), $comment_id, $request->ad_id, $comment_status, $request->comment, $ad->title));
-        //     }
-        // }
-
-
-        return response()->json('succes', 201);
+        $adOwner = $ad->user;
+        
+        // Ne pas envoyer de notification si l'utilisateur commente sa propre annonce
+        if ($adOwner->id !== $user->id) {
+            $adOwner->notify(new CommentCreated($user, $comment_id, $request->ad_id, $comment_status, $request->comment, $ad->title));
+        }
+        
+        return response()->json(['message' => 'Commentaire ajouté avec succès'], 201);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Erreur lors de la création du commentaire', 'error' => $e->getMessage()], 500);
     }
+}
     
 
     // public function unreadNotifications()
@@ -89,17 +86,7 @@ class CommentController extends Controller
     //     return response()->json('success');
     // }
 
-    public function unreadNotifications()
-    {
-        $unreadNotifications = auth()->user()->unreadNotifications;
-        return response()->json($unreadNotifications);
-    }
-
-    public function markAsRead()
-    {
-        auth()->user()->unreadNotifications->markAsRead();
-        return response()->json('success');
-    }
+    
 
 
     public function show($id)

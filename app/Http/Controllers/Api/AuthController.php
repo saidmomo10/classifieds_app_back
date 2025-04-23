@@ -101,12 +101,21 @@ class AuthController extends Controller
                 ], 401);
         }
 
+        // Vérifier si l'utilisateur a validé son email
+        if (is_null($user->email_verified_at) && !$user->hasRole('Admin')) {
+            return response()->json([
+                'status' => 'pending_verification',
+                'message' => 'Veuillez saisir le code de confirmation envoyé à votre email.',
+                'code' => 'ACCOUNT_NOT_CONFIRMED'
+            ], 403);
+        }
+
         $data['token'] = $user->createToken($request->email)->plainTextToken;
         $data['user'] = $user;
         
         $response = [
             'status' => 'success',
-            'message' => 'User is logged in successfully.',
+            'message' => 'Connexion réussie.',
             'data' => $data,
         ];
 
@@ -204,13 +213,17 @@ class AuthController extends Controller
             $user->save();
 
             // Retourner une réponse de succès
-            return response()->json(['message' => 'Confirmation successful'], 200);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Confirmation réussie'
+            ], 200);
         }else{
           // Retourner une réponse d'erreur en cas d'échec de validation
-          return response()->json(['error' => 'Invalid confirmation code'], 422);
+          return response()->json([
+            'status' => 'failed',
+            'message' => 'Code de confirmation invalide'
+            ], 422);
         }
-
-        
     }
 
     public function sendResetPasswordLink(Request $request){

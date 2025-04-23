@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Ad;
 use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -90,7 +91,10 @@ class UserController extends Controller
     
     public function show($id)
     {
-        return User::with('roles')->find($id);
+        $user = User::with('roles')->find($id);
+
+        $ads = Ad::where('user_id', $id)->with('subcategory', 'images', 'department', 'city')->get();
+        return ['ads' => $ads, 'user' => $user];
         
         // $user = User::find($id)->getRoleNames();
         // dd($user);

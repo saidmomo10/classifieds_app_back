@@ -27,7 +27,7 @@ class SubCategoryController extends Controller
 
      public function show(Request $request, $id){
         $subCategory = SubCategory::find($id);
-        $ads = Ad::where('subcategory_id', $id)->with('subcategory', 'images')->get();
+        $ads = Ad::where('subcategory_id', $id)->with('subcategory', 'images', 'department', 'city')->get();
         $number = $ads->count();
         return ['ads' => $ads, 'subCategory' => $subCategory, 'number' => $number];
     }

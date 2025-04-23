@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Ad;
+use App\Models\User;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Events\AnnouncementPublished;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\NewAnnouncementNotification;
 
 class AdController extends Controller
 {
     public function index(){
-        $ads = Ad::with('images', 'subcategory', 'user')
+        $ads = Ad::with('images', 'subcategory', 'user', 'department', 'city')
                 ->orderBy('created_at', 'desc') // Ordonner par date de création décroissante
                 ->paginate(6);
 
@@ -21,12 +24,13 @@ class AdController extends Controller
 
 
     public function getAds(Request $request){
-        $data = Ad::where('title', 'LIKE','%'.$request->keyword.'%')->with('images', 'subcategory')->orderBy('created_at', 'desc')->get();
+        $data = Ad::where('title', 'LIKE','%'.$request->keyword.'%')->with('images', 'subcategory', 'user', 'department', 'city')->orderBy('created_at', 'desc')->get();
         return response()->json($data); 
     }
 
-    public function getByDepartment($department) {
-        $annonces = Ad::where('department', $department)->with('images', 'subcategory')->orderBy('created_at', 'desc')->get();
+    public function getByDepartment($department_id) {
+        $annonces = Ad::where('department_id', $department_id)->with('images', 'subcategory', 'user', 'department', 'city')->orderBy('created_at', 'desc')->get();
+        $number = $annonces->count();
         return response()->json($annonces);
     }
 
@@ -44,7 +48,7 @@ class AdController extends Controller
     }
 
     public function searchAds(Request $request){
-        $ads = Ad::with('images', 'subcategory', 'user')->orderBy('created_at', 'desc')->get();
+        $ads = Ad::with('images', 'subcategory', 'user', 'department', 'city')->orderBy('created_at', 'desc')->get();
         return response()->json($ads);
     }
 
@@ -54,7 +58,7 @@ class AdController extends Controller
     }
 
     public function show($id){
-        $ad = Ad::with('images', 'subcategory', 'user')->find($id);
+        $ad = Ad::with('images', 'subcategory', 'user', 'user', 'department', 'city')->find($id);
         
         $comment = Comment::with('user', 'ad')->where('ad_id', $ad->id)->get();
 
@@ -64,7 +68,7 @@ class AdController extends Controller
     }
 
     public function mostVisitedAds(){
-        $ads = Ad::with('images', 'subcategory', 'user')->orderByDesc('views')->limit(5)->get();
+        $ads = Ad::with('images', 'subcategory', 'user', 'user', 'department', 'city')->orderByDesc('views')->limit(5)->get();
         return response()->json($ads);
     }
 
@@ -78,13 +82,13 @@ class AdController extends Controller
         $rules = [
             'title' => 'required',
             'description' => 'required',
-            'department' => 'required',
-            'city' => 'required',
             'delivery_status' => 'required',
             'state' => 'required',
             'price_type' => 'required',
             'phone' => 'required',
             'subcategory_id' => 'required',
+            'department_id' => 'required',
+            'city_id' => 'required',
             'images.*' => [
                 'required',
                 'image',
@@ -115,13 +119,13 @@ class AdController extends Controller
             $ad = Ad::create([
                 'title' => $request->title,
                 'price' => $request->price,
-                'department' => $request->department,
                 'phone' => $request->phone,
                 'price_type' => $request->price_type,
-                'city' => $request->city,
                 'delivery_status' => $request->delivery_status,
                 'state' => $request->state,
                 'description' => $request->description,
+                'department_id' => $request->department_id,
+                'city_id' => $request->city_id,
                 'user_id' => $user->id,
                 'subcategory_id' => $request->subcategory_id,
             ]);
@@ -148,10 +152,11 @@ class AdController extends Controller
                             'price' => $request->price,
                             'phone' => $request->phone,
                             'price_type' => $request->price_type,
-                            'city' => $request->city,
                             'delivery_status' => $request->delivery_status,
                             'state' => $request->state,
                             'description' => $request->description,
+                            'department_id' => $request->department_id,
+                            'city_id' => $request->city_id,
                             'user_id' => $user->id,
                             'subcategory_id' => $request->subcategory_id,
                             'user_subscription_id' => $key->pivot->id,
@@ -161,8 +166,22 @@ class AdController extends Controller
                             $imagePath = $image->store('images', 'public');
                             $ad->images()->create(['path' => $imagePath]);
                         }
-    
+                        
+                        $admin = User::role('Admin')->get();
+                        // Notifiez chaque administrateur
+                        foreach ($admin as $admi) {
+                            $admi->notify(new NewAnnouncementNotification($ad, $user));
+                        }
+
+                        // Déclencher l'événement
+                        event(new AnnouncementPublished($ad, $user));
                         return response()->json('Annonce créée avec succès', 201);
+                        
+                        // // Notifie tous les admins
+                        // $admin = $user->hasRole('Admin');
+                        // foreach ($admins as $admin) {
+                        //     $admin->notify(new NewAdCreated($ad));
+                        // }
                     }
                 } else {
                     return response()->json(['message' => 'Aucun abonnement'], 404);
@@ -191,10 +210,11 @@ class AdController extends Controller
         $rules = [
             'title' => 'required',
             'description' => 'required',
-            'department' => 'required',
             'user_id' => 'required',
             // 'user_subscription_id' => 'required',
             'subcategory_id' => 'required',
+            'department_id' => 'required',
+            'city_id' => 'required',
             // 'images.*' => [
             //     'required',
             //     'image',
@@ -222,9 +242,10 @@ class AdController extends Controller
         // Mettre à jour les données de l'annonce avec les nouvelles données de la requête
         $ad->update([
             'title' => $request->title,
-            'department' => $request->department,
             'description' => $request->description,
             'subcategory_id' => $request->subcategory_id,
+            'department_id' => $request->department_id,
+            'city_id' => $request->city_id,
         ]);
 
         // Retourner une réponse JSON indiquant que l'annonce a été mise à jour avec succès

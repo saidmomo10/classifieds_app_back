@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             SubCategoryTableSeeder::class,
             FreeSubscriptionTableSeeder::class,
             CreateAdminUserSeeder::class,
+            DepartmentSeeder::class,
             // AdSeeder::class,
         ]);
     }

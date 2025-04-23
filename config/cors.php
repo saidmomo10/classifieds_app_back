@@ -17,6 +17,7 @@ return [
 
     'paths' => [
         'api/*',
+        'broadcasting/auth',
         'login',
         'logout',
         'register',

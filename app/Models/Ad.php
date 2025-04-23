@@ -38,4 +38,19 @@ class Ad extends Model
     public function comments(){
         return $this->hasMany(Comment::class);
     }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function videos()
+    {
+        return $this->hasMany(AdVideo::class);
+    }
 }
