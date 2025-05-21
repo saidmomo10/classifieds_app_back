@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Ad;
 use App\Models\User;
+use App\Models\Department;
 use App\Models\SubCategory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AdFactory extends Factory
 {
@@ -21,8 +22,7 @@ class AdFactory extends Factory
             'state' => $this->faker->randomElement(['Neuf', 'Usé']),
             'sold' => $this->faker->randomElement(['En cours de vente', 'Vendu']),
             'delivery_status' => $this->faker->randomElement(['Oui', 'Non']),
-            'city' => $this->faker->city(),
-            'department' => $this->faker->randomElement(['Atlantique', 'Littoral', 'Ouémé', 'Borgou']),
+            'department_id' => Department::inRandomOrder()->first()->id ?? Department::factory()->create()->id,
             'phone' => $this->faker->phoneNumber(),
             'views' => $this->faker->numberBetween(0, 1000),
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory()->create()->id,

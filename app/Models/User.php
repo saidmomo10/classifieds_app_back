@@ -107,4 +107,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function jobprofile(){
         return $this->hasOne(JobProfile::class);
     }
+
+    public function hasActiveSubscriptionType(string $name): bool
+    {
+        return $this->subscriptions()
+            ->where('subscriptions.name', $name)
+            ->wherePivot('status', 'Abonnement actif')
+            ->exists();
+    }
+
+
 }

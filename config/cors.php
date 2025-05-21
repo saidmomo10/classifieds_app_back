@@ -18,6 +18,7 @@ return [
     'paths' => [
         'api/*',
         'broadcasting/auth',
+        'login/google/callback',
         'login',
         'logout',
         'register',

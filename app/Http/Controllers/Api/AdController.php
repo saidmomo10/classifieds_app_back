@@ -24,7 +24,10 @@ class AdController extends Controller
 
 
     public function getAds(Request $request){
-        $data = Ad::where('title', 'LIKE','%'.$request->keyword.'%')->with('images', 'subcategory', 'user', 'department', 'city')->orderBy('created_at', 'desc')->get();
+        $data = Ad::where('title', 'LIKE','%'.$request->keyword.'%')
+        ->orWhere('description', 'LIKE','%'.$request->keyword.'%')
+        ->with('images', 'subcategory', 'user', 'department', 'city')
+        ->orderBy('created_at', 'desc')->get();
         return response()->json($data); 
     }
 
@@ -58,7 +61,7 @@ class AdController extends Controller
     }
 
     public function show($id){
-        $ad = Ad::with('images', 'subcategory', 'user', 'user', 'department', 'city')->find($id);
+        $ad = Ad::with('images', 'subcategory', 'user', 'department', 'city')->find($id);
         
         $comment = Comment::with('user', 'ad')->where('ad_id', $ad->id)->get();
 
@@ -68,8 +71,12 @@ class AdController extends Controller
     }
 
     public function mostVisitedAds(){
-        $ads = Ad::with('images', 'subcategory', 'user', 'user', 'department', 'city')->orderByDesc('views')->limit(5)->get();
-        return response()->json($ads);
+        if(auth()->user()->hasActiveSubscriptionType('Free')){
+            $ads = Ad::with('images', 'subcategory', 'user', 'department', 'city')->orderByDesc('views')->limit(5)->get();
+            return response()->json($ads);
+        }else{
+            return response()->json(['error' => 'Fonctionnalité réservée aux abonnés Free'], 403);
+        }
     }
 
     public function store(Request $request){

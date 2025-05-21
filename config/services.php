@@ -14,9 +14,9 @@ return [
     |
     */
     'fedapay' => [
-        'public_key' => env('FEDAPAY_PUBLIC_KEY'),
         'secret_key' => env('FEDAPAY_SECRET_KEY'),
-        'environment' => env('FEDAPAY_ENV'),
+        'env' => env('FEDAPAY_ENV', 'sandbox'),
+        'callback_url' => env('FEDAPAY_CALLBACK_URL'),
     ],
 
     'google' => [

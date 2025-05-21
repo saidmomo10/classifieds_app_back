@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.1",
         "ext-pdo_mysql": "*",
+        "beyondcode/laravel-websockets": "1.14.1",
         "fedapay/fedapay-php": "^0.4.5",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.8",
@@ -69,6 +70,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "beta",
     "prefer-stable": true
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Ad;
 use App\Models\File;
+use App\Models\User;
 use FedaPay\FedaPay;
 use FedaPay\Customer;
 use FedaPay\Transaction;
@@ -12,10 +13,10 @@ use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\UserSubscription;
+use App\Models\PaymentTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -144,64 +145,161 @@ class SubscriptionController extends Controller
     public function createTransaction(Request $request, $id)
     {
         $user = Auth::user();
-        $subscription = Subscription::findOrFail($id); // Vérifie que l'abonnement existe.
+        $subscription = Subscription::findOrFail($id);
 
-        // Création du client FedaPay
         try {
-            FedaPay::setApiKey(env('FEDAPAY_SECRET_KEY', 'sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8'));
-            FedaPay::setEnvironment(env('FEDAPAY_ENV', 'sandbox'));
+            // Configuration unique de FedaPay
+            FedaPay::setApiKey(config('services.fedapay.secret_key'));
+            FedaPay::setEnvironment(config('services.fedapay.env'));
             
-            $customer = Customer::create([
-                'firstname' => $user->name,
-                'lastname' => '',
-                'phone' => [
-                    'number' => '22990000000', // Remplace par le vrai numéro de l'utilisateur
-                    'country' => 'bj'
+            // // Création du client FedaPay
+            // $customer = Customer::create([
+            //     'firstname' => $user->name,
+            //     'lastname' => '',
+            //     'email' => $user->email,
+            //     'phone' => [
+            //         'number' => '22990000000',
+            //         'country' => 'bj'
+            //     ]
+            // ]);
+            
+            // URL de callback via Ngrok
+            // $ngrokUrl = 'https://85d0-137-255-30-114.ngrok-free.app'; // Remplacez par votre URL Ngrok actuelle
+            // $callbackUrl = 'https://0295-137-255-30-114.ngrok-free.app/payment/success';
+            
+            // Création de la transaction avec callback
+            $transaction = Transaction::create([
+                'description' => 'Abonnement: ' . $subscription->name,
+                'amount' => 1000,
+                'currency' => ['iso' => 'XOF'],
+                'customer' => [
+                    'name' => $user->name,
+                ],
+                'callback_url' => config('services.fedapay.callback_url'),
+                // 'return_url' => 'http://localhost:5173/payment/success',
+                'metadata' => [
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id
                 ]
             ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la création du client FedaPay'], 500);
-        }
-
-        // Création de la transaction
-        try {
-            FedaPay::setApiKey("sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8");
-            FedaPay::setEnvironment('sandbox');
             
-            $transaction = Transaction::create([
-                'description' => 'Payment for subscription',
-                'amount' => '1000', // Utilisation du prix de l'abonnement
-                'currency' => ['iso' => 'XOF'],
-                // 'callback_url' => 'https://example.com/payment/callback' // URL non nécessaire ici
-            ]);
-
-            // Activation immédiate de l'abonnement **sans vérifier le paiement**
-            $user->subscriptions()->attach($subscription->id, [
-                'activated_at' => now(),
-                'status' => 'Abonnement actif',
-                'end_date' => now()->addMinutes($subscription->duration)
-            ]);
-
-            // Désactiver l'ancien abonnement s'il y en a un
-            $previousSubscription = $user->subscriptions()
-                                        ->latest('activated_at')
-                                        ->skip(1) // Ignorer le dernier abonnement
-                                        ->first();
-            if ($previousSubscription) {
-                $previousSubscription->pivot->status = 'Aucun abonnement';
-                $previousSubscription->pivot->save();
-            }
-
+            // Enregistrer la transaction en attente dans la base de données
+            $paymentTransaction = new PaymentTransaction();
+            $paymentTransaction->user_id = $user->id;
+            $paymentTransaction->subscription_id = $subscription->id;
+            $paymentTransaction->fedapay_transaction_id = $transaction->id;
+            $paymentTransaction->amount = $subscription->price ?? 1000;
+            $paymentTransaction->status = 'pending';
+            $paymentTransaction->save();
+            
+            // Générer l'URL de paiement
+            $paymentData = $transaction->generateToken();
+            
+            // // Pour le développement local uniquement
+            // if (app()->environment('local') && env('FEDAPAY_AUTO_ACTIVATE', false)) {
+            //     Log::warning('DEV MODE: Activation automatique de l\'abonnement sans vérification de paiement');
+                
+            //     // Cette partie n'est que pour le développement rapide, à supprimer en production
+            //     $this->activateSubscription($user, $subscription);
+            // }
+            
             return response()->json([
-                'message' => 'Abonnement activé avec succès!',
+                'message' => 'Transaction créée, veuillez procéder au paiement',
                 'transaction_id' => $transaction->id,
-                'payment_url' => $transaction->generateToken()->url
+                'payment_url' => $paymentData->url
             ], 201);
             
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la création de la transaction'], 500);
+            Log::error('Erreur FedaPay: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur lors de la création de la transaction: ' . $e->getMessage()], 500);
         }
     }
+
+    // Méthode pour activer l'abonnement
+    private function activateSubscription($user, $subscription)
+    {
+        // Activer le nouvel abonnement
+        $user->subscriptions()->attach($subscription->id, [
+            'activated_at' => now(),
+            'status' => 'Abonnement actif',
+            'end_date' => now()->addMinutes($subscription->duration)
+        ]);
+        
+        // Désactiver l'ancien abonnement s'il existe
+        $previousSubscription = $user->subscriptions()
+                                    ->where('subscription_id', '!=', $subscription->id)
+                                    ->where('pivot.status', 'Abonnement actif')
+                                    ->first();
+        if ($previousSubscription) {
+            $user->subscriptions()->updateExistingPivot($previousSubscription->id, [
+                'status' => 'Aucun abonnement'
+            ]);
+        }
+    }
+
+    // Gestionnaire de callback
+    public function handlePaymentCallback(Request $request){
+        try {
+
+            // if ($request->method() === 'GET') {
+            //     // Simple réponse pour les tests ou redirections GET
+            //     return response()->json(['status' => 'Callback GET reçu mais ignoré'], 200);
+            // }
+            
+            FedaPay::setApiKey(env('FEDAPAY_SECRET_KEY', 'sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8'));
+            FedaPay::setEnvironment(env('FEDAPAY_ENV', 'sandbox'));
+            
+
+            $data = $request->all();
+            
+
+            if (isset($data['entity']['id'])) {
+                $transactionId = $data['entity']['id'];
+                
+                Log::info('Données reçues dans callback FedaPay', $data);
+
+                $fedaTransaction = Transaction::retrieve($transactionId);
+                $paymentTransaction = PaymentTransaction::where('fedapay_transaction_id', $transactionId)->first();
+                Log::info('Statut FedaPay reçu : ' . $fedaTransaction->status);
+                if ($paymentTransaction && $fedaTransaction->status === 'approved') {
+                    Log::info('Statut FedaPay reçu : ' . $fedaTransaction->status);
+
+                    $user = User::find($paymentTransaction->user_id);
+                    $subscription = Subscription::find($paymentTransaction->subscription_id);
+
+                    
+
+                    if ($user && $subscription) {
+                        // Activation immédiate de l'abonnement **sans vérifier le paiement**
+                        $user->subscriptions()->attach($subscription->id, [
+                            'activated_at' => now(),
+                            'status' => 'Abonnement actif',
+                            'end_date' => now()->addMinutes($subscription->duration)
+                        ]);
+
+                        // Désactiver l'ancien abonnement s'il y en a un
+                        $previousSubscription = $user->subscriptions()
+                                                    ->latest('activated_at')
+                                                    ->skip(1) // Ignorer le dernier abonnement
+                                                    ->first();
+                        if ($previousSubscription) {
+                            $previousSubscription->pivot->status = 'Aucun abonnement';
+                            $previousSubscription->pivot->save();
+                        }
+
+                        Log::info('Paiement confirmé et abonnement activé pour l\'utilisateur: ' . $user->id);
+                    }
+                }
+            }
+
+            // return response()->json(['message' => 'Callback traité avec succès'], 200);
+        } catch (\Exception $e) {
+            Log::error('Erreur callback FedaPay: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
 
 
 
@@ -326,3 +424,91 @@ class SubscriptionController extends Controller
         return back()->with('success', 'Chaine affecté avec succès!');
     }
 }
+
+
+
+
+// // public function createTransaction(Request $request, $id)
+//     {
+//         $user = Auth::user();
+//         $subscription = Subscription::findOrFail($id); // Vérifie que l'abonnement existe.
+
+//         // Activation immédiate de l'abonnement **sans vérifier le paiement**
+//         $user->subscriptions()->attach($subscription->id, [
+//             'activated_at' => now(),
+//             'status' => 'Abonnement actif',
+//             'end_date' => now()->addMinutes($subscription->duration)
+//         ]);
+
+//         // Désactiver l'ancien abonnement s'il y en a un
+//         $previousSubscription = $user->subscriptions()
+//                                     ->latest('activated_at')
+//                                     ->skip(1) // Ignorer le dernier abonnement
+//                                     ->first();
+//         if ($previousSubscription) {
+//             $previousSubscription->pivot->status = 'Aucun abonnement';
+//             $previousSubscription->pivot->save();
+//         }
+
+//         return response()->json([
+//             'message' => 'Abonnement activé avec succès!',
+//             // 'transaction_id' => $transaction->id,
+//             // 'payment_url' => $transaction->generateToken()->url
+//         ], 201);
+
+//         // // Création du client FedaPay
+//         // try {
+//         //     FedaPay::setApiKey(env('FEDAPAY_SECRET_KEY', 'sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8'));
+//         //     FedaPay::setEnvironment(env('FEDAPAY_ENV', 'sandbox'));
+            
+//         //     $customer = Customer::create([
+//         //         'firstname' => $user->name,
+//         //         'lastname' => '',
+//         //         'phone' => [
+//         //             'number' => '22990000000', // Remplace par le vrai numéro de l'utilisateur
+//         //             'country' => 'bj'
+//         //         ]
+//         //     ]);
+//         // } catch (\Exception $e) {
+//         //     return response()->json(['error' => 'Erreur lors de la création du client FedaPay'], 500);
+//         // }
+
+//         // // Création de la transaction
+//         // try {
+//         //     FedaPay::setApiKey("sk_sandbox_Gumwsrfd-oSl8q4z2xgY90M8");
+//         //     FedaPay::setEnvironment('sandbox');
+            
+//         //     $transaction = Transaction::create([
+//         //         'description' => 'Payment for subscription',
+//         //         'amount' => '1000', // Utilisation du prix de l'abonnement
+//         //         'currency' => ['iso' => 'XOF'],
+//         //         // 'callback_url' => 'https://example.com/payment/callback' // URL non nécessaire ici
+//         //     ]);
+
+//         //     // Activation immédiate de l'abonnement **sans vérifier le paiement**
+//         //     $user->subscriptions()->attach($subscription->id, [
+//         //         'activated_at' => now(),
+//         //         'status' => 'Abonnement actif',
+//         //         'end_date' => now()->addMinutes($subscription->duration)
+//         //     ]);
+
+//         //     // Désactiver l'ancien abonnement s'il y en a un
+//         //     $previousSubscription = $user->subscriptions()
+//         //                                 ->latest('activated_at')
+//         //                                 ->skip(1) // Ignorer le dernier abonnement
+//         //                                 ->first();
+//         //     if ($previousSubscription) {
+//         //         $previousSubscription->pivot->status = 'Aucun abonnement';
+//         //         $previousSubscription->pivot->save();
+//         //     }
+
+//         //     return response()->json([
+//         //         'message' => 'Abonnement activé avec succès!',
+//         //         'transaction_id' => $transaction->id,
+//         //         'payment_url' => $transaction->generateToken()->url
+//         //     ], 201);
+            
+//         // } catch (\Exception $e) {
+//         //     return response()->json(['error' => 'Erreur lors de la création de la transaction'], 500);
+//         // }
+//     }

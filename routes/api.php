@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\VerificationController;
 |
 */
 
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
 Route::get("/test-me", function () {
     return 'Hello from Laravel!';
 });
@@ -97,7 +99,7 @@ Route::controller(SubCategoryController::class)->middleware('auth:sanctum')->gro
 Route::get('/departments', [DepartmentController::class, 'index']);
 Route::get('/ads', [AdController::class, 'index'])->name('index');
 Route::get('/ads/{id}', [AdController::class, 'show'])->name('showads');
-Route::get('/most-visited', [AdController::class, 'mostVisitedAds'])->name('mostVisitedAds');
+Route::middleware('auth:sanctum')->get('/most-visited', [AdController::class, 'mostVisitedAds'])->name('mostVisitedAds');
 Route::controller(AdController::class)->middleware('auth:sanctum')->group(function(){
     // Route::get('/add-status', 'adStatus')->name('adStatus');
     Route::post('/ads', 'store')->name('store');
@@ -116,12 +118,20 @@ Route::controller(SubscriptionController::class)->middleware('auth:sanctum')->gr
     Route::post('/create-subscription', 'createSubscription')->name('createSubscription');
     Route::get('/getSubscriptionId', 'getSubscriptionId')->name('getSubscriptionId');
     // Route pour initier le paiement d'un abonnement
-    Route::post('/subscriptions/{id}/pay', 'createTransaction');
-    Route::post('/fedapay/callback', 'handleCallback')->name('fedapay.callback');    
+    // Route::post('/subscriptions/{id}/pay', 'createTransaction');
+    Route::post('subscriptions/{id}/pay', 'createTransaction');
     Route::put('/statusSubscription/{id}', 'status')->name('SubscriptionStatus');
     Route::get('/adStatus', 'adStatus')->name('adStatus');
 
  });
+// Route de callback (sans protection CSRF et sans authentification)
+Route::match(['get', 'post'], 'fedapay/callback', [SubscriptionController::class, 'handlePaymentCallback']);
+
+// Route de diagnostic pour tester la connectivité
+// Route::get('fedapay/callback', function () {
+//     \Log::info('Test de connectivité pour le callback FedaPay');
+//     return response()->json(['status' => 'Endpoint available'], 200);
+// });
 
  Route::controller(AuthController::class)->group(function() {
     Route::post('auth/register', 'register');
