@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
+    sqlite3 \
     && docker-php-ext-install pdo pdo_pgsql pdo_mysql intl xml zip
 
 # Installer Composer
@@ -20,20 +21,20 @@ WORKDIR /var/www
 # Copier le contenu de l'application Laravel dans le conteneur
 COPY . .
 
+# ➕ Ajouter temporairement un .env de build pour éviter les erreurs
+COPY .env.build .env
+
 # Installer les dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Copier les fichiers de configuration Nginx (si applicable)
-# COPY ./nginx/default.conf /etc/nginx/conf.d/
+# Supprimer le .env temporaire après installation
+RUN rm .env
 
+# ✅ Lier le dossier de stockage après exécution (à faire au moment du run)
+# Ne pas exécuter ici : artisan dépend des vraies variables .env
 
-# Exposer le port sur lequel l'application Laravel fonctionnera
-# EXPOSE 8000
-
-# Exécuter les migrations et démarrer le serveur Laravel
-# CMD php artisan serve --host=0.0.0.0
-CMD php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0
-RUN php artisan storage:link
-
-# Commande pour démarrer le serveur Laravel
-#CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Commande exécutée à l'exécution du conteneur
+CMD php artisan config:clear && \
+    php artisan migrate:fresh --seed --force && \
+    php artisan storage:link && \
+    php artisan serve --host=0.0.0.0 --port=8000
