@@ -157,3 +157,5 @@ Route::get('/ad/{id}/{notificationid}', [AdController::class, 'show'])->middlewa
 // });
 // Route::get('/email/verify/send', [VerificationController::class, 'sendMail']);
 // Route::get('email/verify', [VerificationController::class, 'verify'])->middleware(middleware:'signed')->name(name:'verify-email');
+Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
